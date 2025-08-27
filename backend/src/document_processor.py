@@ -12,6 +12,7 @@ from langchain_pinecone import PineconeVectorStore
 import logging
 import asyncio
 import time
+import pinecone
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +24,25 @@ class DocumentProcessor:
             chunk_overlap=200,
             separators=["\n\n", "\n", ". ", "! ", "? ", " ", ""]
         )
-        self.vectorstore = PineconeVectorStore(
-            index_name=pinecone_index_name,
-            embedding=self.embeddings
-        )
+        
+        # Initialize Pinecone for serverless
+        pinecone_api_key = os.getenv("PINECONE_API_KEY")
+        pinecone_host = os.getenv("PINECONE_HOST")
+        
+        if pinecone_host:
+            # Serverless Pinecone setup
+            self.vectorstore = PineconeVectorStore(
+                index_name=pinecone_index_name,
+                embedding=self.embeddings,
+                pinecone_api_key=pinecone_api_key
+            )
+        else:
+            # Traditional Pinecone setup
+            pinecone_environment = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
+            self.vectorstore = PineconeVectorStore(
+                index_name=pinecone_index_name,
+                embedding=self.embeddings
+            )
         self.progress_callbacks: Dict[int, Callable] = {}
     
     def register_progress_callback(self, doc_id: int, callback: Callable[[int], None]):
