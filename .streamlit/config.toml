@@ -1,0 +1,18 @@
+[server]
+headless = true
+enableCORS = true
+enableXsrfProtection = false
+port = 8501
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+primaryColor = "#667eea"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2ff"
+textColor = "#262730"
+
+[runner]
+magicEnabled = true
+installTracer = true
