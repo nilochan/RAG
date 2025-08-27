@@ -1,0 +1,21 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "backend/Dockerfile"
+
+[deploy]
+startCommand = "python main.py"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "always"
+
+[environments.production]
+[environments.production.variables]
+RAILWAY_ENVIRONMENT = "production"
+APP_ENV = "production"
+LOG_LEVEL = "INFO"
+
+[environments.staging]
+[environments.staging.variables]
+RAILWAY_ENVIRONMENT = "staging"
+APP_ENV = "staging" 
+LOG_LEVEL = "DEBUG"
