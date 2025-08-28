@@ -1,6 +1,7 @@
 [build]
 builder = "dockerfile"
 dockerfilePath = "Dockerfile"
+# Force redeploy - updated dependencies: 2024-08-28
 
 [deploy]
 startCommand = "python main.py"
