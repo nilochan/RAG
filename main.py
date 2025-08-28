@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -54,8 +55,8 @@ def update_document_progress(doc_id: int, progress: int):
 @app.on_startup
 async def startup_event():
     """Initialize the system"""
-    logger.info("=€ Educational RAG Platform starting up...")
-    logger.info(f"=Ê Progress tracking enabled for real-time monitoring")
+    logger.info("Educational RAG Platform starting up...")
+    logger.info("Progress tracking enabled for real-time monitoring")
 
 @app.get("/")
 async def root():
@@ -496,7 +497,7 @@ async def health_check():
         "components": {
             "database": "operational",
             "pinecone": "operational",
-            "openai": "operational",
+            "deepseek": "operational",
             "progress_tracking": "operational"
         },
         "metrics": {
