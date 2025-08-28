@@ -29,7 +29,9 @@ const elements = {
     analyticsGrid: document.getElementById('analyticsGrid'),
     loadingOverlay: document.getElementById('loadingOverlay'),
     loadingText: document.getElementById('loadingText'),
-    toastContainer: document.getElementById('toastContainer')
+    toastContainer: document.getElementById('toastContainer'),
+    themeBtn: document.getElementById('themeBtn'),
+    themeDropdown: document.getElementById('themeDropdown')
 };
 
 // Initialize app
@@ -643,4 +645,114 @@ document.addEventListener('visibilitychange', function() {
         // Page became visible, refresh status
         checkSystemStatus();
     }
+});
+
+// Theme Switcher Functionality
+class ThemeSwitcher {
+    constructor() {
+        this.currentTheme = localStorage.getItem('theme') || 'original';
+        this.themes = {
+            original: { name: 'Original', stylesheet: 'mainStyles' },
+            twilio: { name: 'Twilio', stylesheet: 'twilioTheme' },
+            stripe: { name: 'Stripe', stylesheet: 'stripeTheme' },
+            notion: { name: 'Notion', stylesheet: 'notionTheme' },
+            linear: { name: 'Linear', stylesheet: 'linearTheme' }
+        };
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.loadTheme();
+        this.updateActiveTheme();
+    }
+
+    setupEventListeners() {
+        // Theme button click
+        elements.themeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleDropdown();
+        });
+
+        // Theme options click
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const theme = e.currentTarget.dataset.theme;
+                this.switchTheme(theme);
+                this.closeDropdown();
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            this.closeDropdown();
+        });
+
+        // Prevent dropdown close when clicking inside
+        elements.themeDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+
+    toggleDropdown() {
+        elements.themeDropdown.classList.toggle('open');
+    }
+
+    closeDropdown() {
+        elements.themeDropdown.classList.remove('open');
+    }
+
+    switchTheme(theme) {
+        // Disable all theme stylesheets
+        Object.values(this.themes).forEach(themeObj => {
+            const stylesheet = document.getElementById(themeObj.stylesheet);
+            if (stylesheet) {
+                stylesheet.disabled = true;
+            }
+        });
+
+        // Enable selected theme
+        if (theme === 'original') {
+            document.getElementById('mainStyles').disabled = false;
+        } else {
+            const selectedStylesheet = document.getElementById(this.themes[theme].stylesheet);
+            if (selectedStylesheet) {
+                selectedStylesheet.disabled = false;
+            }
+        }
+
+        this.currentTheme = theme;
+        localStorage.setItem('theme', theme);
+        this.updateActiveTheme();
+        
+        // Show success toast
+        const themeName = theme === 'original' ? 'Original' : this.themes[theme].name;
+        showToast('Theme Changed', `Switched to ${themeName} theme`, 'success');
+    }
+
+    loadTheme() {
+        this.switchTheme(this.currentTheme);
+    }
+
+    updateActiveTheme() {
+        // Remove active class from all options
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.classList.remove('active');
+        });
+
+        // Add active class to current theme
+        const currentOption = document.querySelector(`[data-theme="${this.currentTheme}"]`);
+        if (currentOption) {
+            currentOption.classList.add('active');
+        }
+    }
+}
+
+// Initialize theme switcher
+let themeSwitcher;
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit to ensure all elements are loaded
+    setTimeout(() => {
+        themeSwitcher = new ThemeSwitcher();
+    }, 100);
 });
