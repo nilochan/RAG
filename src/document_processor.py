@@ -18,31 +18,46 @@ logger = logging.getLogger(__name__)
 
 class DocumentProcessor:
     def __init__(self, pinecone_index_name: str):
-        self.embeddings = OpenAIEmbeddings()
+        # Initialize text splitter
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=200,
             separators=["\n\n", "\n", ". ", "! ", "? ", " ", ""]
         )
         
-        # Initialize Pinecone for serverless
-        pinecone_api_key = os.getenv("PINECONE_API_KEY")
-        pinecone_host = os.getenv("PINECONE_HOST")
+        # Initialize embeddings conditionally (only if OpenAI key is available)
+        self.embeddings = None
+        self.vectorstore = None
         
-        if pinecone_host:
-            # Serverless Pinecone setup
-            self.vectorstore = PineconeVectorStore(
-                index_name=pinecone_index_name,
-                embedding=self.embeddings,
-                pinecone_api_key=pinecone_api_key
-            )
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        if openai_api_key:
+            try:
+                self.embeddings = OpenAIEmbeddings()
+                
+                # Initialize Pinecone for serverless
+                pinecone_api_key = os.getenv("PINECONE_API_KEY")
+                pinecone_host = os.getenv("PINECONE_HOST")
+                
+                if pinecone_host:
+                    # Serverless Pinecone setup
+                    self.vectorstore = PineconeVectorStore(
+                        index_name=pinecone_index_name,
+                        embedding=self.embeddings,
+                        pinecone_api_key=pinecone_api_key
+                    )
+                else:
+                    # Traditional Pinecone setup
+                    pinecone_environment = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
+                    self.vectorstore = PineconeVectorStore(
+                        index_name=pinecone_index_name,
+                        embedding=self.embeddings
+                    )
+                logger.info("✅ Document processor initialized with OpenAI embeddings and Pinecone")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not initialize embeddings/vector store: {e}")
+                logger.info("📝 Document processor will work in text-only mode (no vector search)")
         else:
-            # Traditional Pinecone setup
-            pinecone_environment = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
-            self.vectorstore = PineconeVectorStore(
-                index_name=pinecone_index_name,
-                embedding=self.embeddings
-            )
+            logger.info("📝 No OPENAI_API_KEY found - Document processor in text-only mode")
         self.progress_callbacks: Dict[int, Callable] = {}
     
     def register_progress_callback(self, doc_id: int, callback: Callable[[int], None]):
@@ -149,40 +164,45 @@ class DocumentProcessor:
             
             self.update_progress(doc_id, 50)
             
-            # Step 4: Generate embeddings and store in Pinecone (50-100%)
-            logger.info(f"[{doc_id}] Generating embeddings for {len(documents)} chunks")
+            # Step 4: Generate embeddings and store in Pinecone (50-100%) - Optional
             vector_ids = []
             
-            # Process in batches to avoid rate limits and track progress
-            batch_size = 10
-            total_batches = (len(documents) + batch_size - 1) // batch_size
-            
-            for batch_idx in range(0, len(documents), batch_size):
-                batch = documents[batch_idx:batch_idx + batch_size]
+            if self.vectorstore:
+                logger.info(f"[{doc_id}] Generating embeddings for {len(documents)} chunks")
                 
-                # Generate unique IDs for this batch
-                batch_ids = [f"{doc_id}_{j}" for j in range(batch_idx, min(batch_idx + batch_size, len(documents)))]
-                vector_ids.extend(batch_ids)
+                # Process in batches to avoid rate limits and track progress
+                batch_size = 10
+                total_batches = (len(documents) + batch_size - 1) // batch_size
                 
-                # Add to Pinecone with retry logic
-                max_retries = 3
-                for attempt in range(max_retries):
-                    try:
-                        self.vectorstore.add_documents(batch, ids=batch_ids)
-                        break
-                    except Exception as e:
-                        if attempt == max_retries - 1:
-                            raise e
-                        logger.warning(f"[{doc_id}] Retry {attempt + 1} for batch {batch_idx//batch_size + 1}")
-                        await asyncio.sleep(1)
-                
-                # Update progress based on batches completed
-                current_batch = batch_idx // batch_size + 1
-                progress = 50 + int((current_batch / total_batches) * 50)
-                self.update_progress(doc_id, progress)
-                
-                # Small delay to avoid rate limiting
-                await asyncio.sleep(0.1)
+                for batch_idx in range(0, len(documents), batch_size):
+                    batch = documents[batch_idx:batch_idx + batch_size]
+                    
+                    # Generate unique IDs for this batch
+                    batch_ids = [f"{doc_id}_{j}" for j in range(batch_idx, min(batch_idx + batch_size, len(documents)))]
+                    vector_ids.extend(batch_ids)
+                    
+                    # Add to Pinecone with retry logic
+                    max_retries = 3
+                    for attempt in range(max_retries):
+                        try:
+                            self.vectorstore.add_documents(batch, ids=batch_ids)
+                            break
+                        except Exception as e:
+                            if attempt == max_retries - 1:
+                                raise e
+                            logger.warning(f"[{doc_id}] Retry {attempt + 1} for batch {batch_idx//batch_size + 1}")
+                            await asyncio.sleep(1)
+                    
+                    # Update progress based on batches completed
+                    current_batch = batch_idx // batch_size + 1
+                    progress = 50 + int((current_batch / total_batches) * 50)
+                    self.update_progress(doc_id, progress)
+                    
+                    # Small delay to avoid rate limiting
+                    await asyncio.sleep(0.1)
+            else:
+                logger.info(f"[{doc_id}] Skipping vector storage - text-only mode")
+                self.update_progress(doc_id, 90)
             
             self.update_progress(doc_id, 100)
             logger.info(f"[{doc_id}] Successfully processed {filename}: {len(chunks)} chunks, {len(vector_ids)} vectors")
@@ -207,6 +227,10 @@ class DocumentProcessor:
     def search_documents(self, query: str, doc_ids: List[int] = None, k: int = 3) -> List[Document]:
         """Search through processed documents"""
         try:
+            if not self.vectorstore:
+                logger.warning("⚠️ Vector search not available - no embeddings configured")
+                return []
+                
             if doc_ids:
                 # Filter by specific document IDs
                 filter_dict = {"doc_id": {"$in": doc_ids}}
