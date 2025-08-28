@@ -61,7 +61,7 @@ logger.info("Progress tracking enabled for real-time monitoring")
 async def root():
     return {
         "message": "Educational RAG Platform API",
-        "version": "2.0.0",
+        "version": "2.0.1",
         "status": "operational",
         "features": [
             "File upload and processing",
