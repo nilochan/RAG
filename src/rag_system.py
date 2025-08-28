@@ -347,7 +347,7 @@ class EnhancedRAGSystem:
     def get_system_stats(self) -> Dict:
         """Get system statistics"""
         return {
-            "model": self.llm.model_name,
+            "model": getattr(self.llm, 'model', 'deepseek-chat'),
             "temperature": self.llm.temperature,
             "available_chains": ["document", "general", "hybrid"],
             "status": "operational"
