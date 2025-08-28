@@ -1,11 +1,9 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, Float
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 from datetime import datetime
-
-Base = declarative_base()
+from .database import Base
 
 class Document(Base):
     __tablename__ = "documents"
