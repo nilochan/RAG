@@ -111,6 +111,18 @@
     background: linear-gradient(135deg, #5E6AD2 0%, #0D0E11 100%);
 }
 
+.cyber-preview {
+    background: linear-gradient(135deg, #00f5ff 0%, #ff006e 50%, #8338ec 100%);
+}
+
+.luxury-preview {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+}
+
+.energy-preview {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff006e 50%, #8338ec 100%);
+}
+
 .theme-option span {
     font-size: 14px;
     font-weight: 500;

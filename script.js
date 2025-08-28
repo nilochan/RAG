@@ -656,7 +656,10 @@ class ThemeSwitcher {
             twilio: { name: 'Twilio', stylesheet: 'twilioTheme' },
             stripe: { name: 'Stripe', stylesheet: 'stripeTheme' },
             notion: { name: 'Notion', stylesheet: 'notionTheme' },
-            linear: { name: 'Linear', stylesheet: 'linearTheme' }
+            linear: { name: 'Linear', stylesheet: 'linearTheme' },
+            cyber: { name: 'Cyber 🚀', stylesheet: 'cyberTheme' },
+            luxury: { name: 'Luxury 💎', stylesheet: 'luxuryTheme' },
+            energy: { name: 'Energy ⚡', stylesheet: 'energyTheme' }
         };
         this.init();
     }
