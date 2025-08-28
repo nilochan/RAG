@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational RAG Platform</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎓</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h1>Educational RAG Platform</h1>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Connection Status Card -->
+            <div class="card" id="statusCard">
+                <div class="card-header">
+                    <i class="fas fa-server"></i>
+                    <h2>System Status</h2>
+                    <button class="btn btn-secondary btn-sm" id="refreshStatus">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="system-status" id="systemStatus">
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Checking system status...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Upload Section -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h2>Document Upload</h2>
+                </div>
+                <div class="card-body">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-file-upload"></i>
+                        </div>
+                        <h3>Drag and drop your documents here</h3>
+                        <p>or <strong>click to browse</strong></p>
+                        <p class="file-types">Supports: PDF, DOCX, TXT, CSV, XLSX (max 10MB)</p>
+                        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.csv,.xlsx" hidden>
+                    </div>
+                    
+                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                        <div class="progress-info">
+                            <span id="uploadFileName"></span>
+                            <span id="uploadStatus"></span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-details" id="progressDetails"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents List -->
+            <div class="card" id="documentsCard" style="display: none;">
+                <div class="card-header">
+                    <i class="fas fa-file-alt"></i>
+                    <h2>Uploaded Documents</h2>
+                    <button class="btn btn-secondary btn-sm" id="refreshDocs">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="documents-list" id="documentsList"></div>
+                </div>
+            </div>
+
+            <!-- Q&A Section -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-comments"></i>
+                    <h2>Ask Questions</h2>
+                    <div class="qa-options">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="useDocsOnly">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Use uploaded docs only</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chat-container" id="chatContainer">
+                        <div class="welcome-message">
+                            <i class="fas fa-robot"></i>
+                            <h3>Welcome to DeepSeek AI Assistant</h3>
+                            <p>Ask me anything! I can answer questions about your uploaded documents or provide general knowledge.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="input-area">
+                        <div class="input-group">
+                            <textarea 
+                                id="questionInput" 
+                                placeholder="Ask a question about your documents or anything else..."
+                                rows="3"
+                                maxlength="1000"
+                            ></textarea>
+                            <button class="btn btn-primary" id="askButton">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Ask</span>
+                            </button>
+                        </div>
+                        <div class="input-info">
+                            <span class="char-count"><span id="charCount">0</span>/1000</span>
+                            <span class="ai-info">Powered by DeepSeek AI</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Dashboard -->
+            <div class="card" id="analyticsCard" style="display: none;">
+                <div class="card-header">
+                    <i class="fas fa-chart-line"></i>
+                    <h2>Analytics</h2>
+                    <button class="btn btn-secondary btn-sm" id="refreshAnalytics">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="analytics-grid" id="analyticsGrid"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Educational RAG Platform | Powered by DeepSeek AI & Railway</p>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p id="loadingText">Processing...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
