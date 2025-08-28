@@ -53,11 +53,9 @@ def update_document_progress(doc_id: int, progress: int):
     }
     logger.info(f"Document {doc_id} progress: {progress}%")
 
-@app.on_startup
-async def startup_event():
-    """Initialize the system"""
-    logger.info("Educational RAG Platform starting up...")
-    logger.info("Progress tracking enabled for real-time monitoring")
+# Startup logging (removed deprecated @app.on_startup decorator)
+logger.info("Educational RAG Platform starting up...")
+logger.info("Progress tracking enabled for real-time monitoring")
 
 @app.get("/")
 async def root():
