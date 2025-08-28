@@ -13,7 +13,8 @@
       "Read(C:\\Users\\chanc\\Downloads/**)",
       "Read(C:\\Users\\chanc\\Downloads/**)",
       "Bash(git pull:*)",
-      "WebFetch(domain:nilochan.github.io)"
+      "WebFetch(domain:nilochan.github.io)",
+      "WebFetch(domain:rag-chanchinthai.up.railway.app)"
     ],
     "deny": [],
     "ask": [],
