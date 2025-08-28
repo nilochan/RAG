@@ -19,7 +19,7 @@ class Document(Base):
     processing_status = Column(String(50), default="pending")  # pending, processing, completed, failed
     chunk_count = Column(Integer, default=0)
     vector_ids = Column(Text)  # JSON list of vector IDs in Pinecone
-    metadata = Column(Text)  # JSON metadata
+    doc_metadata = Column(Text)  # JSON metadata
 
 class QueryLog(Base):
     __tablename__ = "query_logs"

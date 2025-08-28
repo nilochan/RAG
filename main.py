@@ -213,7 +213,7 @@ async def process_document_background(
             doc_record.processing_status = "completed"
             doc_record.chunk_count = result["chunk_count"]
             doc_record.vector_ids = json.dumps(result["vector_ids"])
-            doc_record.metadata = json.dumps({
+            doc_record.doc_metadata = json.dumps({
                 "text_length": result["text_length"],
                 "processed_at": datetime.utcnow().isoformat(),
                 "processing_time": result.get("processing_time", 0)
@@ -224,7 +224,7 @@ async def process_document_background(
             
         else:
             doc_record.processing_status = "failed"
-            doc_record.metadata = json.dumps({
+            doc_record.doc_metadata = json.dumps({
                 "error": result["error"],
                 "failed_at": datetime.utcnow().isoformat()
             })
@@ -242,7 +242,7 @@ async def process_document_background(
     except Exception as e:
         logger.error(f"Background processing error: {e}")
         doc_record.processing_status = "failed"
-        doc_record.metadata = json.dumps({
+        doc_record.doc_metadata = json.dumps({
             "error": str(e),
             "failed_at": datetime.utcnow().isoformat()
         })
@@ -331,7 +331,7 @@ async def get_document_status(doc_id: int, db: Session = Depends(get_db)):
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     
-    metadata = json.loads(doc.metadata or '{}')
+    doc_metadata = json.loads(doc.doc_metadata or '{}')
     progress_data = progress_store.get(doc_id, {})
     
     return {
@@ -342,7 +342,7 @@ async def get_document_status(doc_id: int, db: Session = Depends(get_db)):
         "file_size": doc.file_size,
         "file_type": doc.file_type,
         "upload_time": doc.upload_time,
-        "metadata": metadata,
+        "metadata": doc_metadata,
         "progress": progress_data.get("progress"),
         "last_update": progress_data.get("timestamp")
     }
