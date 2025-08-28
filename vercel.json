@@ -1,0 +1,10 @@
+{
+  "name": "educational-rag-platform",
+  "version": 2,
+  "builds": [
+    {
+      "src": "**",
+      "use": "@vercel/static"
+    }
+  ]
+}
