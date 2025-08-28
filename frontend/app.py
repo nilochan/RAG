@@ -13,7 +13,7 @@ import queue
 # Page config
 st.set_page_config(
     page_title="Educational RAG Platform",
-    page_icon="<“",
+    page_icon="ðŸŽ“",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -128,7 +128,7 @@ def get_real_time_progress(doc_id):
         return None
 
 def main():
-    st.markdown('<h1 class="main-header"><“ Educational RAG Platform</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header"><ï¿½ Educational RAG Platform</h1>', unsafe_allow_html=True)
     
     # Check API connection
     api_connected = check_api_connection()
@@ -138,10 +138,10 @@ def main():
     
     # Sidebar
     with st.sidebar:
-        st.header("=Ë Navigation")
+        st.header("=ï¿½ Navigation")
         page = st.selectbox(
             "Choose a page:",
-            ["<à Home", "=ä Upload Documents", "S Ask Questions", "=Ê Analytics Dashboard", "™ Settings"]
+            ["<ï¿½ Home", "=ï¿½ Upload Documents", "S Ask Questions", "=ï¿½ Analytics Dashboard", "ï¿½ Settings"]
         )
         
         st.markdown("---")
@@ -151,13 +151,13 @@ def main():
             st.cache_data.clear()
             st.rerun()
         
-        if st.button(">ù Clear Cache"):
+        if st.button(">ï¿½ Clear Cache"):
             st.cache_data.clear()
             st.success("Cache cleared!")
         
         # Real-time system status
         st.markdown("---")
-        st.subheader("¡ System Status")
+        st.subheader("ï¿½ System Status")
         
         try:
             health_response = requests.get(f"{API_BASE_URL}/health")
@@ -169,22 +169,22 @@ def main():
                 # Show active processors
                 active_trackers = health_data.get("metrics", {}).get("active_progress_trackers", 0)
                 if active_trackers > 0:
-                    st.markdown(f'<span class="real-time-update">=Ê {active_trackers} active jobs</span>', unsafe_allow_html=True)
+                    st.markdown(f'<span class="real-time-update">=ï¿½ {active_trackers} active jobs</span>', unsafe_allow_html=True)
             else:
                 st.markdown(f'<span class="performance-indicator indicator-red"></span> API: Error', unsafe_allow_html=True)
         except:
             st.markdown(f'<span class="performance-indicator indicator-red"></span> API: Offline', unsafe_allow_html=True)
     
     # Main content based on selected page
-    if page == "<à Home":
+    if page == "<ï¿½ Home":
         show_home_page()
-    elif page == "=ä Upload Documents":
+    elif page == "=ï¿½ Upload Documents":
         show_upload_page()
     elif page == "S Ask Questions":
         show_query_page()
-    elif page == "=Ê Analytics Dashboard":
+    elif page == "=ï¿½ Analytics Dashboard":
         show_analytics_dashboard()
-    elif page == "™ Settings":
+    elif page == "ï¿½ Settings":
         show_settings_page()
 
 def show_home_page():
@@ -194,7 +194,7 @@ def show_home_page():
     
     with col1:
         st.markdown("""
-        ### =ä Smart Document Upload
+        ### =ï¿½ Smart Document Upload
         - **Multi-format support**: PDF, DOCX, TXT, CSV, XLSX
         - **Real-time progress tracking** with live updates
         - **Intelligent text extraction** with error handling
@@ -214,7 +214,7 @@ def show_home_page():
         
     with col3:
         st.markdown("""
-        ### =Ê Real-Time Analytics
+        ### =ï¿½ Real-Time Analytics
         - **Live progress monitoring** with % completion
         - **Performance metrics** and processing statistics
         - **Document management** with batch operations
@@ -224,7 +224,7 @@ def show_home_page():
     
     # Real-time system overview
     st.markdown("---")
-    st.subheader("=È Live System Overview")
+    st.subheader("=ï¿½ Live System Overview")
     
     try:
         # Get analytics data
@@ -237,7 +237,7 @@ def show_home_page():
             
             with col1:
                 total_docs = analytics["documents"]["total"]
-                st.metric("=Á Total Documents", total_docs)
+                st.metric("=ï¿½ Total Documents", total_docs)
             
             with col2:
                 completed_docs = analytics["documents"]["completed"]
@@ -246,17 +246,17 @@ def show_home_page():
             with col3:
                 processing_docs = analytics["documents"]["processing"]
                 if processing_docs > 0:
-                    st.metric("¡ Processing", processing_docs, delta="Active")
+                    st.metric("ï¿½ Processing", processing_docs, delta="Active")
                 else:
-                    st.metric("¡ Processing", processing_docs)
+                    st.metric("ï¿½ Processing", processing_docs)
             
             with col4:
                 success_rate = analytics["documents"]["success_rate"]
-                st.metric("=È Success Rate", f"{success_rate:.1f}%")
+                st.metric("=ï¿½ Success Rate", f"{success_rate:.1f}%")
             
             with col5:
                 avg_response = analytics["queries"]["average_response_time"]
-                st.metric("ñ Avg Response", f"{avg_response:.2f}s")
+                st.metric("ï¿½ Avg Response", f"{avg_response:.2f}s")
             
             # Processing jobs indicator
             active_jobs = analytics["system"]["active_processing_jobs"]
@@ -278,7 +278,7 @@ def get_documents():
         return []
 
 def show_upload_page():
-    st.subheader("=ä Document Upload with Real-Time Progress")
+    st.subheader("=ï¿½ Document Upload with Real-Time Progress")
     
     # File uploader with enhanced styling
     st.markdown('<div class="upload-area">', unsafe_allow_html=True)
@@ -292,9 +292,9 @@ def show_upload_page():
     if uploaded_file is not None:
         # Display file info in an attractive format
         file_info = {
-            "=Ä Filename": uploaded_file.name,
-            "=Ï File size": f"{uploaded_file.size:,} bytes ({uploaded_file.size / (1024*1024):.2f} MB)",
-            "<¯ File type": uploaded_file.type
+            "=ï¿½ Filename": uploaded_file.name,
+            "=ï¿½ File size": f"{uploaded_file.size:,} bytes ({uploaded_file.size / (1024*1024):.2f} MB)",
+            "<ï¿½ File type": uploaded_file.type
         }
         
         # Create info cards
@@ -304,7 +304,7 @@ def show_upload_page():
                 st.info(f"**{key}**\n\n{value}")
         
         # Upload button with enhanced styling
-        if st.button("=€ Process Document", type="primary", use_container_width=True):
+        if st.button("=ï¿½ Process Document", type="primary", use_container_width=True):
             with st.spinner("Uploading and initializing processing..."):
                 try:
                     files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
@@ -330,7 +330,7 @@ def show_upload_page():
     
     # Show existing documents with enhanced table
     st.markdown("---")
-    st.subheader("=Á Document Library")
+    st.subheader("=ï¿½ Document Library")
     
     documents = get_documents()
     if documents:
@@ -340,9 +340,9 @@ def show_upload_page():
         def format_status(status):
             indicators = {
                 'completed': ' Completed',
-                'processing': '¡ Processing',
+                'processing': 'ï¿½ Processing',
                 'failed': 'L Failed',
-                'pending': 'ó Pending'
+                'pending': 'ï¿½ Pending'
             }
             return indicators.get(status, status)
         
@@ -351,7 +351,7 @@ def show_upload_page():
         
         # Display enhanced table
         display_df = df[['filename', 'status_display', 'chunk_count', 'upload_time']].copy()
-        display_df.columns = ['=Ä Document', '=Ê Status', '=" Chunks', '=Å Uploaded']
+        display_df.columns = ['=ï¿½ Document', '=ï¿½ Status', '=" Chunks', '=ï¿½ Uploaded']
         
         st.dataframe(
             display_df,
@@ -360,12 +360,12 @@ def show_upload_page():
         )
         
         # Document management section
-        st.subheader("=à Document Management")
+        st.subheader("=ï¿½ Document Management")
         
         # Show processing documents with live progress
         processing_docs = [doc for doc in documents if doc['status'] == 'processing']
         if processing_docs:
-            st.markdown("### ¡ Currently Processing")
+            st.markdown("### ï¿½ Currently Processing")
             for doc in processing_docs:
                 show_mini_progress_tracker(doc['id'], doc['filename'])
         
@@ -385,7 +385,7 @@ def show_upload_page():
                     show_document_details(doc_id)
             
             with col2:
-                if st.button("=Ê Show Progress", use_container_width=True):
+                if st.button("=ï¿½ Show Progress", use_container_width=True):
                     progress_data = get_real_time_progress(doc_id)
                     if progress_data:
                         st.json(progress_data)
@@ -393,18 +393,18 @@ def show_upload_page():
                         st.info("No progress data available")
             
             with col3:
-                if st.button("=Ñ Delete Document", type="secondary", use_container_width=True):
-                    if st.button("  Confirm Delete", type="secondary"):
+                if st.button("=ï¿½ Delete Document", type="secondary", use_container_width=True):
+                    if st.button("ï¿½ Confirm Delete", type="secondary"):
                         delete_document(doc_id)
     else:
-        st.info("=í No documents uploaded yet. Upload your first document above!")
+        st.info("=ï¿½ No documents uploaded yet. Upload your first document above!")
         
         # Show sample analytics while empty
-        st.markdown("### =Ê Getting Started")
+        st.markdown("### =ï¿½ Getting Started")
         sample_metrics = pd.DataFrame({
             'Metric': ['Documents Ready', 'Processing Queue', 'Success Rate', 'Avg. Processing Time'],
             'Value': ['0', '0', '100%', '< 30s'],
-            'Status': ['<¯ Ready', '¡ Available', '<‰ Excellent', '=€ Fast']
+            'Status': ['<ï¿½ Ready', 'ï¿½ Available', '<ï¿½ Excellent', '=ï¿½ Fast']
         })
         st.table(sample_metrics)
 
@@ -417,7 +417,7 @@ def show_mini_progress_tracker(doc_id, filename):
         
         col1, col2 = st.columns([3, 1])
         with col1:
-            st.write(f"=Ä {filename}")
+            st.write(f"=ï¿½ {filename}")
             st.progress(progress / 100)
         with col2:
             st.write(f"{progress}%")
@@ -427,7 +427,7 @@ def show_mini_progress_tracker(doc_id, filename):
 def show_real_time_progress(doc_id, filename):
     """Show detailed real-time progress monitoring"""
     st.markdown('<div class="progress-container">', unsafe_allow_html=True)
-    st.subheader(f"¡ Processing: {filename}")
+    st.subheader(f"ï¿½ Processing: {filename}")
     
     progress_placeholder = st.empty()
     status_placeholder = st.empty()
@@ -448,12 +448,12 @@ def show_real_time_progress(doc_id, filename):
             # Update status
             if status == "completed":
                 status_placeholder.success(f" Processing completed! ({progress}%)")
-                details_placeholder.info(f"ð Completed at: {timestamp}")
+                details_placeholder.info(f"ï¿½ Completed at: {timestamp}")
                 break
             elif status == "failed":
                 error = progress_data.get("error", "Unknown error")
                 status_placeholder.error(f"L Processing failed: {error}")
-                details_placeholder.error(f"ð Failed at: {timestamp}")
+                details_placeholder.error(f"ï¿½ Failed at: {timestamp}")
                 break
             elif status == "processing":
                 status_placeholder.info(f"= Processing... {progress}%")
@@ -461,7 +461,7 @@ def show_real_time_progress(doc_id, filename):
             
             time.sleep(2)  # Check every 2 seconds
         else:
-            status_placeholder.warning("  Cannot get progress data")
+            status_placeholder.warning("ï¿½ Cannot get progress data")
             break
     
     st.markdown('</div>', unsafe_allow_html=True)
@@ -473,22 +473,22 @@ def show_document_details(doc_id):
         if response.status_code == 200:
             doc_data = response.json()
             
-            st.subheader(f"=Ä {doc_data['filename']}")
+            st.subheader(f"=ï¿½ {doc_data['filename']}")
             
             # Create info grid
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                st.metric("=Ê Status", doc_data['status'])
+                st.metric("=ï¿½ Status", doc_data['status'])
                 st.metric("=" Chunks Created", doc_data.get('chunk_count', 0))
                 
             with col2:
-                st.metric("=Ï File Size", f"{doc_data.get('file_size', 0):,} bytes")
-                st.metric("=Ä File Type", doc_data.get('file_type', 'Unknown').upper())
+                st.metric("=ï¿½ File Size", f"{doc_data.get('file_size', 0):,} bytes")
+                st.metric("=ï¿½ File Type", doc_data.get('file_type', 'Unknown').upper())
                 
             with col3:
                 upload_time = pd.to_datetime(doc_data['upload_time']).strftime('%Y-%m-%d %H:%M:%S')
-                st.metric("=Å Uploaded", upload_time)
+                st.metric("=ï¿½ Uploaded", upload_time)
                 
                 if doc_data.get('last_update'):
                     last_update = pd.to_datetime(doc_data['last_update']).strftime('%Y-%m-%d %H:%M:%S')
@@ -531,9 +531,9 @@ def show_query_page():
         )
     
     with col2:
-        st.markdown("### ™ Query Options")
+        st.markdown("### ï¿½ Query Options")
         use_docs_only = st.checkbox(
-            "=Ú Search uploaded docs only",
+            "=ï¿½ Search uploaded docs only",
             help="If checked, will only search your uploaded documents"
         )
         
@@ -569,15 +569,15 @@ def show_query_page():
                     processing_time = time.time() - start_time
                     
                     # Display answer with enhanced formatting
-                    st.markdown("### =¡ Answer")
+                    st.markdown("### =ï¿½ Answer")
                     st.markdown(result["answer"])
                     
                     # Show performance metrics
-                    st.markdown("### =Ê Query Performance")
+                    st.markdown("### =ï¿½ Query Performance")
                     col1, col2, col3, col4 = st.columns(4)
                     
                     with col1:
-                        source_type = "=Ú Your Documents" if result["is_from_uploaded_docs"] else "< General Knowledge"
+                        source_type = "=ï¿½ Your Documents" if result["is_from_uploaded_docs"] else "< General Knowledge"
                         st.metric("Source", source_type)
                     
                     with col2:
@@ -592,10 +592,10 @@ def show_query_page():
                     
                     # Show sources with enhanced display
                     if result["sources"]:
-                        st.markdown("### =Ö Sources & Citations")
+                        st.markdown("### =ï¿½ Sources & Citations")
                         
                         for i, source in enumerate(result["sources"]):
-                            with st.expander(f"=Ñ Source {i+1} - {source.get('source_file', 'Unknown Document')}"):
+                            with st.expander(f"=ï¿½ Source {i+1} - {source.get('source_file', 'Unknown Document')}"):
                                 col1, col2 = st.columns([3, 1])
                                 
                                 with col1:
@@ -629,7 +629,7 @@ def show_query_page():
     
     # Query history with enhanced display
     st.markdown("---")
-    st.subheader("=Ý Recent Queries")
+    st.subheader("=ï¿½ Recent Queries")
     
     if st.session_state.query_history:
         # Show statistics
@@ -654,7 +654,7 @@ def show_query_page():
         st.info("No queries yet. Ask your first question above!")
 
 def show_analytics_dashboard():
-    st.subheader("=Ê Real-Time Analytics Dashboard")
+    st.subheader("=ï¿½ Real-Time Analytics Dashboard")
     
     try:
         # Get fresh analytics data
@@ -667,12 +667,12 @@ def show_analytics_dashboard():
         documents = get_documents()
         
         # Overview metrics with real-time indicators
-        st.markdown("### =È System Overview")
+        st.markdown("### =ï¿½ System Overview")
         col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
             total_docs = analytics["documents"]["total"]
-            st.metric("=Á Total Documents", total_docs)
+            st.metric("=ï¿½ Total Documents", total_docs)
         
         with col2:
             completed_docs = analytics["documents"]["completed"]
@@ -682,10 +682,10 @@ def show_analytics_dashboard():
         with col3:
             processing_docs = analytics["documents"]["processing"]
             if processing_docs > 0:
-                st.metric("¡ Processing", processing_docs, delta="Active")
+                st.metric("ï¿½ Processing", processing_docs, delta="Active")
                 st.markdown('<span class="real-time-update">= Live Jobs Running</span>', unsafe_allow_html=True)
             else:
-                st.metric("¡ Processing", processing_docs)
+                st.metric("ï¿½ Processing", processing_docs)
         
         with col4:
             total_queries = analytics["queries"]["total"]
@@ -693,13 +693,13 @@ def show_analytics_dashboard():
         
         with col5:
             avg_response = analytics["queries"]["average_response_time"]
-            st.metric("ñ Avg Response", f"{avg_response:.2f}s")
+            st.metric("ï¿½ Avg Response", f"{avg_response:.2f}s")
         
         if documents:
             df = pd.DataFrame(documents)
             
             # Document status distribution
-            st.markdown("### =Ê Document Status Distribution")
+            st.markdown("### =ï¿½ Document Status Distribution")
             col1, col2 = st.columns(2)
             
             with col1:
@@ -739,7 +739,7 @@ def show_analytics_dashboard():
                 st.plotly_chart(fig_timeline, use_container_width=True)
             
             # Performance metrics
-            st.markdown("### ¡ Performance Metrics")
+            st.markdown("### ï¿½ Performance Metrics")
             
             # Create performance dashboard
             col1, col2 = st.columns(2)
@@ -794,7 +794,7 @@ def show_analytics_dashboard():
                         col1, col2, col3, col4 = st.columns(4)
                         
                         with col1:
-                            st.write(f"=Ä {doc['filename']}")
+                            st.write(f"=ï¿½ {doc['filename']}")
                         
                         with col2:
                             progress = progress_data.get('progress', 0)
@@ -807,7 +807,7 @@ def show_analytics_dashboard():
                             st.markdown('<span class="real-time-update">= Live</span>', unsafe_allow_html=True)
             
             # System performance metrics
-            st.markdown("### =¥ System Performance")
+            st.markdown("### =ï¿½ System Performance")
             
             system_metrics = analytics["system"]
             
@@ -828,10 +828,10 @@ def show_analytics_dashboard():
                 st.metric("AI Model", rag_stats.get("model", "gpt-3.5-turbo").split("-")[-1].upper())
         
         else:
-            st.info("=í No analytics data available yet. Upload some documents to see metrics!")
+            st.info("=ï¿½ No analytics data available yet. Upload some documents to see metrics!")
             
             # Show sample dashboard
-            st.markdown("### =Ê Sample Analytics View")
+            st.markdown("### =ï¿½ Sample Analytics View")
             
             # Create sample data for demonstration
             sample_dates = pd.date_range(start='2024-01-01', end='2024-01-30', freq='D')
@@ -854,7 +854,7 @@ def show_analytics_dashboard():
         st.error(f"Error loading analytics: {e}")
 
 def show_settings_page():
-    st.subheader("™ System Configuration")
+    st.subheader("ï¿½ System Configuration")
     
     # API Configuration
     st.markdown("### =' API Configuration")
@@ -878,7 +878,7 @@ def show_settings_page():
         st.info(f"Current timeout: {timeout} seconds")
     
     # Real-time settings
-    st.markdown("### ¡ Real-Time Features")
+    st.markdown("### ï¿½ Real-Time Features")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -903,7 +903,7 @@ def show_settings_page():
             })
     
     # Performance settings
-    st.markdown("### =Ê Performance Settings")
+    st.markdown("### =ï¿½ Performance Settings")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -921,7 +921,7 @@ def show_settings_page():
         st.info("Maximum number of documents to process simultaneously")
     
     # System actions
-    st.markdown("### =à System Actions")
+    st.markdown("### =ï¿½ System Actions")
     
     col1, col2, col3, col4 = st.columns(4)
     
@@ -932,7 +932,7 @@ def show_settings_page():
             st.rerun()
     
     with col2:
-        if st.button("=Ê Export Settings", use_container_width=True):
+        if st.button("=ï¿½ Export Settings", use_container_width=True):
             settings = {
                 "api_url": api_url,
                 "timeout": timeout,
@@ -942,20 +942,20 @@ def show_settings_page():
                 "cache_ttl": cache_ttl
             }
             st.download_button(
-                "=¾ Download Settings JSON",
+                "=ï¿½ Download Settings JSON",
                 data=json.dumps(settings, indent=2),
                 file_name="rag_platform_settings.json",
                 mime="application/json"
             )
     
     with col3:
-        if st.button(">ê Run System Test", use_container_width=True):
+        if st.button(">ï¿½ Run System Test", use_container_width=True):
             with st.spinner("Running system tests..."):
                 test_results = run_system_tests(api_url)
                 st.json(test_results)
     
     with col4:
-        if st.button("=È Performance Report", use_container_width=True):
+        if st.button("=ï¿½ Performance Report", use_container_width=True):
             show_performance_report()
     
     # System information
@@ -967,14 +967,14 @@ def show_settings_page():
             system_info = response.json()
             
             info_display = {
-                "=€ Platform Version": system_info.get("version", "Unknown"),
-                "=ñ Frontend": "Streamlit",
+                "=ï¿½ Platform Version": system_info.get("version", "Unknown"),
+                "=ï¿½ Frontend": "Streamlit",
                 "=' Backend": "FastAPI + Python",
-                "=¾ Vector Database": "Pinecone",
+                "=ï¿½ Vector Database": "Pinecone",
                 "> AI Model": "OpenAI GPT",
-                "=Ä Document Processing": "LangChain + PyPDF2",
+                "=ï¿½ Document Processing": "LangChain + PyPDF2",
                 " Deployment": "Railway + Docker",
-                "=Ê Real-time Features": "Server-Sent Events + Progress Tracking"
+                "=ï¿½ Real-time Features": "Server-Sent Events + Progress Tracking"
             }
             
             for key, value in info_display.items():
@@ -1017,7 +1017,7 @@ def run_system_tests(api_url):
 
 def show_performance_report():
     """Show detailed performance report"""
-    st.markdown("### =È Performance Report")
+    st.markdown("### =ï¿½ Performance Report")
     
     try:
         analytics_response = requests.get(f"{API_BASE_URL}/analytics")

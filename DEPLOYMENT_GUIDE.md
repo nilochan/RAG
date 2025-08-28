@@ -1,6 +1,36 @@
 # 🚀 Deployment Guide - Educational RAG Platform
 
-## 📋 **Quick Deployment Checklist**
+## Current Status ✅
+
+### Backend (Railway) 
+- **Status**: Deployed and Running  
+- **Repository**: https://github.com/nilochan/RAG
+- **Auto-Deploy**: ✅ Enabled from `master` branch
+- **UTF-8 Encoding**: ✅ Fixed (commit e8db9b7)
+
+### Frontend (Streamlit Cloud)
+- **Status**: Deployed at https://chanchinthai.streamlit.app/
+- **Repository**: Connected to same GitHub repo  
+- **Status**: Waiting for Railway backend URL connection
+
+## 🔗 Connecting Frontend to Backend
+
+### Step 1: Get Your Railway Backend URL
+1. Go to https://railway.app/dashboard
+2. Find your "Educational RAG Platform" project
+3. Click on the service/deployment  
+4. Copy the **Public URL** (looks like: `https://your-app-name-production-1a2b.up.railway.app`)
+
+### Step 2: Configure Streamlit Cloud
+1. Go to https://share.streamlit.io/
+2. Find your "Educational RAG Platform" app
+3. Click the **⚙️ Settings** gear icon
+4. Go to **Secrets** tab
+5. Add this configuration:
+
+```toml
+API_BASE_URL = "https://your-railway-url-here.railway.app"
+```
 
 ### ✅ **What You Have Ready:**
 - [x] **GitHub Repository**: https://github.com/nilochan/RAG
