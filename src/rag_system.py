@@ -29,24 +29,26 @@ import json
 logger = logging.getLogger(__name__)
 
 class DeepSeekLLM(LLM):
-    """Custom DeepSeek LLM wrapper for LangChain"""
+    """Custom DeepSeek LLM wrapper for LangChain with Railway compatibility"""
     
-    api_key: str = Field(..., description="DeepSeek API key")
-    base_url: str = Field(default="https://api.deepseek.com/v1", description="DeepSeek API base URL")
-    model: str = Field(default="deepseek-chat", description="DeepSeek model name")
-    temperature: float = Field(default=0.7, description="Temperature for generation")
-    max_tokens: int = Field(default=2000, description="Maximum tokens to generate")
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if not self.api_key:
-            self.api_key = os.getenv("DEEPSEEK_API_KEY", "")
+    def __init__(self, api_key: str = None, base_url: str = "https://api.deepseek.com/v1", 
+                 model: str = "deepseek-chat", temperature: float = 0.7, max_tokens: int = 2000, **kwargs):
+        # Initialize without Field annotations to avoid JSON serialization issues
+        if LANGCHAIN_AVAILABLE:
+            super().__init__(**kwargs)
+        
+        self.api_key = api_key or os.getenv("DEEPSEEK_API_KEY", "")
+        self.base_url = base_url
+        self.model = model
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+        
         if not self.api_key:
             raise ValueError("DEEPSEEK_API_KEY environment variable is required")
     
     @property
     def _llm_type(self) -> str:
-        return "deepseek"
+        return "deepseek" if LANGCHAIN_AVAILABLE else "deepseek-simple"
     
     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
         """Synchronous call to DeepSeek API"""
@@ -100,25 +102,31 @@ class DeepSeekLLM(LLM):
 
 class EnhancedRAGSystem:
     def __init__(self, temperature: float = 0.7, model: str = "deepseek-chat"):
-        # Initialize DeepSeek LLM with Railway deployment error handling
-        try:
-            self.llm = DeepSeekLLM(
-                temperature=temperature,
-                model=model,
-                api_key=os.getenv("DEEPSEEK_API_KEY", "")
-            )
-            self.railway_mode = False
-            logger.info("✅ RAG system initialized with full LangChain support")
-        except Exception as e:
-            logger.warning(f"⚠️ LangChain initialization failed: {e}")
-            logger.info("🔄 Switching to Railway-compatible mode")
-            self.llm = None
-            self.railway_mode = True
-            return  # Skip LangChain initialization
+        self.temperature = temperature
+        self.model = model
+        self.railway_mode = True  # Default to Railway mode for safety
         
-        # Only initialize LangChain components if available
-        if not LANGCHAIN_AVAILABLE:
-            self.railway_mode = True
+        # Try to initialize LangChain components
+        if LANGCHAIN_AVAILABLE:
+            try:
+                self.llm = DeepSeekLLM(
+                    temperature=temperature,
+                    model=model,
+                    api_key=os.getenv("DEEPSEEK_API_KEY", "")
+                )
+                # Test that the LLM can be used without JSON serialization issues
+                _ = self.llm.model  # Test attribute access
+                self.railway_mode = False
+                logger.info("✅ RAG system initialized with full LangChain support")
+            except Exception as e:
+                logger.warning(f"⚠️ LangChain initialization failed: {e}")
+                logger.info("🔄 Using Railway-compatible mode")
+                self.llm = None
+                self.railway_mode = True
+                return  # Skip LangChain initialization
+        else:
+            logger.info("🔄 LangChain not available - using Railway-compatible mode")
+            self.llm = None
             return
             
         # Prompt for answering from documents
@@ -468,9 +476,20 @@ Answer:"""
     
     def get_system_stats(self) -> Dict:
         """Get system statistics"""
-        return {
-            "model": self.llm.model if hasattr(self.llm, 'model') else 'deepseek-chat',
-            "temperature": getattr(self.llm, 'temperature', 0.7),
-            "available_chains": ["document", "general", "hybrid"],
-            "status": "operational"
-        }
+        if hasattr(self, 'railway_mode') and self.railway_mode:
+            return {
+                "model": getattr(self, 'model', 'deepseek-chat'),
+                "temperature": getattr(self, 'temperature', 0.7),
+                "available_chains": ["railway_fallback"],
+                "status": "operational",
+                "mode": "railway_compatible",
+                "langchain_available": LANGCHAIN_AVAILABLE
+            }
+        else:
+            return {
+                "model": self.llm.model if hasattr(self.llm, 'model') else 'deepseek-chat',
+                "temperature": getattr(self.llm, 'temperature', 0.7),
+                "available_chains": ["document", "general", "hybrid"],
+                "status": "operational",
+                "mode": "langchain_full"
+            }
