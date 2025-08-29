@@ -29,46 +29,16 @@ class DocumentProcessor:
         self.embeddings = None
         self.vectorstore = None
         
-        openai_api_key = os.getenv("OPENAI_API_KEY")
-        if openai_api_key:
-            try:
-                # Use OpenAI embeddings with error handling
-                self.embeddings = OpenAIEmbeddings(
-                    openai_api_key=openai_api_key,
-                    model="text-embedding-ada-002"  # Explicitly specify model
-                )
-                
-                # Initialize Pinecone for serverless with better error handling
-                pinecone_api_key = os.getenv("PINECONE_API_KEY")
-                pinecone_host = os.getenv("PINECONE_HOST")
-                
-                if pinecone_host and pinecone_api_key:
-                    try:
-                        # Test connection first
-                        self.vectorstore = PineconeVectorStore(
-                            index_name=pinecone_index_name,
-                            embedding=self.embeddings,
-                            pinecone_api_key=pinecone_api_key
-                        )
-                        logger.info("✅ Pinecone connection successful")
-                    except Exception as pinecone_error:
-                        logger.error(f"❌ Pinecone connection failed: {pinecone_error}")
-                        logger.info("🔄 Switching to text-only mode due to Pinecone issues")
-                        self.vectorstore = None
-                        self.embeddings = None
-                else:
-                    # Traditional Pinecone setup
-                    pinecone_environment = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
-                    self.vectorstore = PineconeVectorStore(
-                        index_name=pinecone_index_name,
-                        embedding=self.embeddings
-                    )
-                logger.info("✅ Document processor initialized with OpenAI embeddings and Pinecone")
-            except Exception as e:
-                logger.warning(f"⚠️ Could not initialize embeddings/vector store: {e}")
-                logger.info("📝 Document processor will work in text-only mode (no vector search)")
-        else:
-            logger.info("📝 No OPENAI_API_KEY found - Document processor in text-only mode")
+        # TEMPORARY: Skip embeddings due to dimension mismatch
+        # Your Pinecone index expects 1024 dimensions (llama-text-embed-v2)
+        # But OpenAI produces 1536 dimensions (text-embedding-ada-002)
+        
+        logger.info("⚠️ Skipping embeddings due to dimension mismatch")
+        logger.info("📝 Pinecone index: 1024 dims | OpenAI embeddings: 1536 dims")
+        logger.info("🔄 Running in text-only mode until index is updated")
+        
+        # All embedding code temporarily disabled due to dimension mismatch
+        logger.info("📝 Document processor initialized in text-only mode")
         self.progress_callbacks: Dict[int, Callable] = {}
     
     def register_progress_callback(self, doc_id: int, callback: Callable[[int], None]):
