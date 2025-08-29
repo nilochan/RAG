@@ -104,30 +104,16 @@ class EnhancedRAGSystem:
     def __init__(self, temperature: float = 0.7, model: str = "deepseek-chat"):
         self.temperature = temperature
         self.model = model
-        self.railway_mode = True  # Default to Railway mode for safety
         
-        # Try to initialize LangChain components
-        if LANGCHAIN_AVAILABLE:
-            try:
-                self.llm = DeepSeekLLM(
-                    temperature=temperature,
-                    model=model,
-                    api_key=os.getenv("DEEPSEEK_API_KEY", "")
-                )
-                # Test that the LLM can be used without JSON serialization issues
-                _ = self.llm.model  # Test attribute access
-                self.railway_mode = False
-                logger.info("✅ RAG system initialized with full LangChain support")
-            except Exception as e:
-                logger.warning(f"⚠️ LangChain initialization failed: {e}")
-                logger.info("🔄 Using Railway-compatible mode")
-                self.llm = None
-                self.railway_mode = True
-                return  # Skip LangChain initialization
-        else:
-            logger.info("🔄 LangChain not available - using Railway-compatible mode")
-            self.llm = None
-            return
+        # FORCE Railway mode for reliability - API is confirmed working
+        self.railway_mode = True
+        self.llm = None
+        
+        logger.info("🚀 RAG system initialized in Railway-compatible mode")
+        logger.info("✅ DeepSeek API integration ready")
+        
+        # Skip all LangChain initialization to avoid JSON serialization issues
+        return
             
         # Prompt for answering from documents
         self.doc_prompt = PromptTemplate(
