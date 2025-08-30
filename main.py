@@ -121,8 +121,8 @@ async def upload_file(
         file_content = await file.read()
         file_size = len(file_content)
         
-        # Validate file size (max 10MB)
-        max_size = 10 * 1024 * 1024  # 10MB
+        # Validate file size (max 50MB)
+        max_size = 50 * 1024 * 1024  # 50MB
         if file_size > max_size:
             raise HTTPException(
                 status_code=400,

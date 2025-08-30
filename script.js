@@ -165,15 +165,50 @@ function handleFileDrop(e) {
     
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
-        handleFileUpload(files[0]);
+        if (files.length === 1) {
+            handleFileUpload(files[0]);
+        } else {
+            handleMultipleFileUpload(files);
+        }
     }
 }
 
 function handleFileSelect(e) {
-    const file = e.target.files[0];
-    if (file) {
-        handleFileUpload(file);
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+        if (files.length === 1) {
+            handleFileUpload(files[0]);
+        } else {
+            handleMultipleFileUpload(files);
+        }
     }
+}
+
+async function handleMultipleFileUpload(files) {
+    if (isUploading) {
+        showToast('Upload Error', 'Another file is currently being uploaded', 'warning');
+        return;
+    }
+    
+    showToast('Multiple Files', `Processing ${files.length} files sequentially...`, 'info');
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        showToast('File Processing', `Processing file ${i + 1} of ${files.length}: ${file.name}`, 'info');
+        
+        try {
+            await handleFileUpload(file);
+            // Wait a moment between uploads
+            if (i < files.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        } catch (error) {
+            showToast('Upload Error', `Failed to upload ${file.name}: ${error.message}`, 'error');
+        }
+    }
+    
+    showToast('All Files Complete', `Successfully processed ${files.length} files!`, 'success');
+    await loadDocuments(); // Refresh the documents list
 }
 
 async function handleFileUpload(file) {
@@ -183,12 +218,12 @@ async function handleFileUpload(file) {
     }
     
     // Validate file
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 50 * 1024 * 1024; // 50MB
     const allowedTypes = ['pdf', 'docx', 'doc', 'txt', 'csv', 'xlsx'];
     const fileExtension = file.name.split('.').pop().toLowerCase();
     
     if (file.size > maxSize) {
-        showToast('File Too Large', 'Maximum file size is 10MB', 'error');
+        showToast('File Too Large', 'Maximum file size is 50MB', 'error');
         return;
     }
     
@@ -269,7 +304,12 @@ async function trackUploadProgress(documentId) {
                             Document processed successfully
                         </div>
                     `;
-                    setTimeout(() => hideUploadProgress(), 3000);
+                    
+                    // Refresh documents list to show updated status
+                    setTimeout(async () => {
+                        await loadDocuments();
+                        hideUploadProgress();
+                    }, 1000); // Wait 1 second for backend to update
                     return;
                 } else if (data.status === 'failed') {
                     throw new Error(data.error || 'Processing failed');
