@@ -20,6 +20,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY main.py .
 COPY src/ ./src/
 
+# Copy frontend files (HTML, CSS, JS)
+COPY index.html .
+COPY script.js .
+COPY *.css .
+
 # Create necessary directories
 RUN mkdir -p /app/uploads /app/logs
 
