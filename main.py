@@ -235,8 +235,17 @@ async def process_document_background(
                 "processing_time": result.get("processing_time", 0)
             })
             
-            # Final progress update
+            # Final progress update and cleanup
             update_document_progress(doc_id, 100)
+            
+            # Clean up progress store after 5 seconds to avoid stale data
+            import asyncio
+            async def cleanup_progress():
+                await asyncio.sleep(5)
+                if doc_id in progress_store:
+                    del progress_store[doc_id]
+            
+            asyncio.create_task(cleanup_progress())
             
         else:
             doc_record.processing_status = "failed"
@@ -323,9 +332,13 @@ async def get_documents(db: Session = Depends(get_db)):
     
     result = []
     for doc in documents:
-        # Get real-time progress if available
+        # Prioritize database status over progress store
         progress = None
-        if doc.id in progress_store:
+        if doc.processing_status == "completed":
+            progress = 100  # Always show 100% for completed documents
+        elif doc.processing_status == "failed":
+            progress = 0    # Show 0% for failed documents
+        elif doc.id in progress_store:
             progress = progress_store[doc.id]["progress"]
         
         result.append(DocumentStatus(
