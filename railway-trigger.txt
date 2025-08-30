@@ -1,0 +1,2 @@
+Railway deployment trigger - August 28, 2025 - JSON serialization fix
+Version 2.0.1 with DeepSeek bug fix should be deployed

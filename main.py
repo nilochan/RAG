@@ -2,7 +2,8 @@
 # Railway redeploy trigger: langchain dependencies added - 2024-08-28
 from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 import asyncio
 import os
@@ -20,6 +21,9 @@ from src.rag_system import EnhancedRAGSystem
 
 # Initialize FastAPI
 app = FastAPI(title="Educational RAG Platform", version="2.0.0")
+
+# Mount static files (CSS, JS, HTML)
+app.mount("/static", StaticFiles(directory="."), name="static")
 
 # Enable CORS
 app.add_middleware(
@@ -59,6 +63,11 @@ logger.info("Progress tracking enabled for real-time monitoring")
 
 @app.get("/")
 async def root():
+    """Serve the main HTML page"""
+    return FileResponse('index.html')
+
+@app.get("/api")
+async def api_info():
     return {
         "message": "Educational RAG Platform API",
         "version": "2.0.0",
