@@ -277,19 +277,53 @@ async def process_document_background(
         }
 
 @app.get("/documents/{doc_id}/progress")
-async def get_document_progress(doc_id: int):
+async def get_document_progress(doc_id: int, db: Session = Depends(get_db)):
     """Get real-time processing progress for a document"""
-    if doc_id not in progress_store:
-        raise HTTPException(status_code=404, detail="Progress tracking not found")
+    # First check if document exists in database
+    doc_record = db.query(DocumentModel).filter(DocumentModel.id == doc_id).first()
+    if not doc_record:
+        raise HTTPException(status_code=404, detail="Document not found")
     
-    progress_data = progress_store[doc_id]
+    # If document is completed or failed, return database status
+    if doc_record.processing_status == "completed":
+        return {
+            "document_id": doc_id,
+            "progress": 100,
+            "status": "completed",
+            "timestamp": datetime.utcnow().isoformat(),
+            "filename": doc_record.original_name,
+            "error": None
+        }
+    elif doc_record.processing_status == "failed":
+        return {
+            "document_id": doc_id,
+            "progress": 0,
+            "status": "failed",
+            "timestamp": datetime.utcnow().isoformat(),
+            "filename": doc_record.original_name,
+            "error": "Processing failed"
+        }
+    
+    # For processing documents, check progress store
+    if doc_id in progress_store:
+        progress_data = progress_store[doc_id]
+        return {
+            "document_id": doc_id,
+            "progress": progress_data["progress"],
+            "status": progress_data["status"],
+            "timestamp": progress_data["timestamp"],
+            "filename": progress_data.get("filename", doc_record.original_name),
+            "error": progress_data.get("error")
+        }
+    
+    # Fallback for documents without progress tracking
     return {
         "document_id": doc_id,
-        "progress": progress_data["progress"],
-        "status": progress_data["status"],
-        "timestamp": progress_data["timestamp"],
-        "filename": progress_data.get("filename", "Unknown"),
-        "error": progress_data.get("error")
+        "progress": 0,
+        "status": "pending",
+        "timestamp": datetime.utcnow().isoformat(),
+        "filename": doc_record.original_name,
+        "error": None
     }
 
 @app.get("/documents/{doc_id}/progress/stream")
