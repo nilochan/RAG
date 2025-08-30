@@ -26,9 +26,9 @@ app = FastAPI(title="Educational RAG Platform", version="2.0.0")
 # Mount static files (CSS, JS, HTML) - serve from current directory
 try:
     app.mount("/static", StaticFiles(directory="."), name="static")
-    logger.info("✅ Static files mounted successfully")
+    print("✅ Static files mounted successfully")  # Use print before logger is configured
 except Exception as e:
-    logger.error(f"❌ Failed to mount static files: {e}")
+    print(f"❌ Failed to mount static files: {e}")  # Use print before logger is configured
 
 # Enable CORS
 app.add_middleware(
@@ -46,12 +46,12 @@ progress_store: Dict[int, Dict] = {}
 document_processor = DocumentProcessor(os.getenv("PINECONE_INDEX_NAME", "educational-docs"))
 rag_system = EnhancedRAGSystem()
 
-# Create tables
-Base.metadata.create_all(bind=engine)
-
-# Configure logging
+# Configure logging first (before using logger)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Create tables
+Base.metadata.create_all(bind=engine)
 
 def update_document_progress(doc_id: int, progress: int):
     """Update progress for a document"""
