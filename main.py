@@ -2,10 +2,7 @@
 # Railway redeploy trigger: langchain dependencies added - 2024-08-28
 from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse, FileResponse, HTMLResponse
-from fastapi.staticfiles import StaticFiles
-import os
-from pathlib import Path
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
 import asyncio
 import logging
@@ -20,15 +17,8 @@ from src.document_processor import DocumentProcessor
 from src.database import get_db, engine, Base
 from src.rag_system import EnhancedRAGSystem
 
-# Initialize FastAPI
-app = FastAPI(title="Educational RAG Platform", version="2.0.0")
-
-# Mount static files (CSS, JS, HTML) - serve from current directory
-try:
-    app.mount("/static", StaticFiles(directory="."), name="static")
-    print("✅ Static files mounted successfully")  # Use print before logger is configured
-except Exception as e:
-    print(f"❌ Failed to mount static files: {e}")  # Use print before logger is configured
+# Initialize FastAPI (Backend API Only)
+app = FastAPI(title="Educational RAG Platform API", version="2.0.0")
 
 # Enable CORS
 app.add_middleware(
@@ -68,43 +58,20 @@ logger.info("Progress tracking enabled for real-time monitoring")
 
 @app.get("/")
 async def root():
-    """Serve the main HTML page"""
-    try:
-        # Try to serve index.html if it exists
-        if os.path.exists('index.html'):
-            return FileResponse('index.html')
-        else:
-            # Fallback HTML if file doesn't exist
-            html_content = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Educational RAG Platform</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 2rem; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .error { color: #e53e3e; background: #fed7d7; padding: 1rem; border-radius: 8px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🎓 Educational RAG Platform</h1>
-        <div class="error">
-            <h2>Frontend files not found</h2>
-            <p>The HTML/CSS files are not available in this Railway deployment.</p>
-            <p>API is working at: <a href="/api">/api</a></p>
-            <p>Health check: <a href="/health">/health</a></p>
-        </div>
-    </div>
-</body>
-</html>
-            """
-            return HTMLResponse(content=html_content)
-    except Exception as e:
-        logger.error(f"Error serving root: {e}")
-        return HTMLResponse(content=f"<h1>Error: {str(e)}</h1>")
+    """Backend API Root - Frontend is served by Vercel"""
+    return {
+        "message": "Educational RAG Platform Backend API",
+        "version": "2.0.0", 
+        "status": "operational",
+        "frontend_url": "Served by Vercel",
+        "api_endpoints": {
+            "upload": "/upload",
+            "query": "/query", 
+            "documents": "/documents",
+            "health": "/health",
+            "analytics": "/analytics"
+        }
+    }
 
 @app.get("/api")
 async def api_info():

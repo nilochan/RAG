@@ -16,14 +16,9 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy backend application code only
 COPY main.py .
 COPY src/ ./src/
-
-# Copy frontend files (HTML, CSS, JS)
-COPY index.html .
-COPY script.js .
-COPY *.css .
 
 # Create necessary directories
 RUN mkdir -p /app/uploads /app/logs
