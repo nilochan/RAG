@@ -114,12 +114,6 @@ body::after {
     padding: 1.5rem 0;
 }
 
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
 .logo {
     display: flex;
     align-items: center;

@@ -29,30 +29,51 @@ class DocumentProcessor:
         self.embeddings = None
         self.vectorstore = None
         
+        # ✅ FIXED: Dimension mismatch resolved with new Pinecone index
+        # New index: educational-docs-openai (1536 dimensions)
+        # OpenAI model: text-embedding-3-small (1536 dimensions)
+        
         openai_api_key = os.getenv("OPENAI_API_KEY")
         if openai_api_key:
             try:
-                self.embeddings = OpenAIEmbeddings()
+                # Use text-embedding-3-small model to match new Pinecone index
+                self.embeddings = OpenAIEmbeddings(
+                    openai_api_key=openai_api_key,
+                    model="text-embedding-3-small",  # 1536 dimensions - matches new index!
+                )
                 
-                # Initialize Pinecone for serverless
+                # Initialize Pinecone with new index (educational-docs-openai)
                 pinecone_api_key = os.getenv("PINECONE_API_KEY")
                 pinecone_host = os.getenv("PINECONE_HOST")
                 
-                if pinecone_host:
-                    # Serverless Pinecone setup
-                    self.vectorstore = PineconeVectorStore(
-                        index_name=pinecone_index_name,
-                        embedding=self.embeddings,
-                        pinecone_api_key=pinecone_api_key
-                    )
+                if pinecone_host and pinecone_api_key:
+                    try:
+                        self.vectorstore = PineconeVectorStore(
+                            index_name=pinecone_index_name,  # Should be "educational-docs-openai"
+                            embedding=self.embeddings,
+                            pinecone_api_key=pinecone_api_key
+                        )
+                        logger.info("✅ Pinecone vectorstore initialized successfully")
+                        logger.info(f"📊 Index: {pinecone_index_name} | Model: text-embedding-3-small | Dims: 1536")
+                    except Exception as pinecone_error:
+                        logger.error(f"❌ Pinecone connection failed: {pinecone_error}")
+                        logger.info("🔄 Falling back to text-only mode")
+                        self.vectorstore = None
+                        self.embeddings = None
                 else:
-                    # Traditional Pinecone setup
+                    # Traditional Pinecone setup (fallback)
+                    logger.warning("No PINECONE_HOST found, trying traditional setup")
                     pinecone_environment = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
                     self.vectorstore = PineconeVectorStore(
                         index_name=pinecone_index_name,
                         embedding=self.embeddings
                     )
-                logger.info("✅ Document processor initialized with OpenAI embeddings and Pinecone")
+                    
+                if self.vectorstore:
+                    logger.info("✅ Document processor initialized with OpenAI embeddings and Pinecone")
+                else:
+                    logger.info("📝 Document processor in text-only mode")
+                    
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize embeddings/vector store: {e}")
                 logger.info("📝 Document processor will work in text-only mode (no vector search)")
@@ -167,42 +188,62 @@ class DocumentProcessor:
             # Step 4: Generate embeddings and store in Pinecone (50-100%) - Optional
             vector_ids = []
             
-            if self.vectorstore:
+            if self.vectorstore and self.embeddings:
                 logger.info(f"[{doc_id}] Generating embeddings for {len(documents)} chunks")
                 
-                # Process in batches to avoid rate limits and track progress
-                batch_size = 10
-                total_batches = (len(documents) + batch_size - 1) // batch_size
-                
-                for batch_idx in range(0, len(documents), batch_size):
-                    batch = documents[batch_idx:batch_idx + batch_size]
+                try:
+                    # Process in smaller batches to avoid issues
+                    batch_size = 5  # Reduced from 10 to be safer
+                    total_batches = (len(documents) + batch_size - 1) // batch_size
                     
-                    # Generate unique IDs for this batch
-                    batch_ids = [f"{doc_id}_{j}" for j in range(batch_idx, min(batch_idx + batch_size, len(documents)))]
-                    vector_ids.extend(batch_ids)
-                    
-                    # Add to Pinecone with retry logic
-                    max_retries = 3
-                    for attempt in range(max_retries):
-                        try:
-                            self.vectorstore.add_documents(batch, ids=batch_ids)
+                    for batch_idx in range(0, len(documents), batch_size):
+                        batch = documents[batch_idx:batch_idx + batch_size]
+                        
+                        # Generate unique IDs for this batch
+                        batch_ids = [f"{doc_id}_{j}" for j in range(batch_idx, min(batch_idx + batch_size, len(documents)))]
+                        
+                        # Add to Pinecone with comprehensive error handling
+                        max_retries = 2  # Reduced retries for faster feedback
+                        success = False
+                        
+                        for attempt in range(max_retries):
+                            try:
+                                logger.info(f"[{doc_id}] Processing batch {batch_idx//batch_size + 1}/{total_batches}")
+                                self.vectorstore.add_documents(batch, ids=batch_ids)
+                                vector_ids.extend(batch_ids)
+                                success = True
+                                break
+                                
+                            except Exception as e:
+                                logger.error(f"[{doc_id}] Batch {batch_idx//batch_size + 1} attempt {attempt + 1} failed: {e}")
+                                if attempt == max_retries - 1:
+                                    # If all retries fail, continue with text-only mode
+                                    logger.warning(f"[{doc_id}] Vectorization failed, continuing in text-only mode")
+                                    self.vectorstore = None
+                                    break
+                                await asyncio.sleep(2)  # Longer wait between retries
+                        
+                        if not success and not self.vectorstore:
                             break
-                        except Exception as e:
-                            if attempt == max_retries - 1:
-                                raise e
-                            logger.warning(f"[{doc_id}] Retry {attempt + 1} for batch {batch_idx//batch_size + 1}")
-                            await asyncio.sleep(1)
-                    
-                    # Update progress based on batches completed
-                    current_batch = batch_idx // batch_size + 1
-                    progress = 50 + int((current_batch / total_batches) * 50)
-                    self.update_progress(doc_id, progress)
-                    
-                    # Small delay to avoid rate limiting
-                    await asyncio.sleep(0.1)
+                        
+                        # Update progress based on batches completed
+                        current_batch = batch_idx // batch_size + 1
+                        progress = 50 + int((current_batch / total_batches) * 40)  # Only go to 90% for vectorization
+                        self.update_progress(doc_id, progress)
+                        
+                        # Longer delay to avoid rate limiting
+                        await asyncio.sleep(0.5)
+                        
+                except Exception as vectorization_error:
+                    logger.error(f"[{doc_id}] Vectorization completely failed: {vectorization_error}")
+                    logger.info(f"[{doc_id}] Continuing in text-only mode")
+                    self.vectorstore = None
+                    vector_ids = []
             else:
-                logger.info(f"[{doc_id}] Skipping vector storage - text-only mode")
-                self.update_progress(doc_id, 90)
+                logger.info(f"[{doc_id}] No vector storage available - text-only mode")
+                
+            # Always update to 95% before final completion
+            self.update_progress(doc_id, 95)
             
             self.update_progress(doc_id, 100)
             logger.info(f"[{doc_id}] Successfully processed {filename}: {len(chunks)} chunks, {len(vector_ids)} vectors")

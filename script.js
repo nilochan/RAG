@@ -656,6 +656,7 @@ class ThemeSwitcher {
             twilio: { name: 'Twilio', stylesheet: 'twilioTheme' },
             stripe: { name: 'Stripe', stylesheet: 'stripeTheme' },
             notion: { name: 'Notion', stylesheet: 'notionTheme' },
+<<<<<<< HEAD
             linear: { name: 'Linear', stylesheet: 'linearTheme' },
             cyber: { name: 'Cyber 🚀', stylesheet: 'cyberTheme' },
             luxury: { name: 'Luxury 💎', stylesheet: 'luxuryTheme' },

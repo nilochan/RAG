@@ -111,6 +111,7 @@
     background: linear-gradient(135deg, #5E6AD2 0%, #0D0E11 100%);
 }
 
+<<<<<<< HEAD
 .cyber-preview {
     background: linear-gradient(135deg, #00f5ff 0%, #ff006e 50%, #8338ec 100%);
 }
@@ -123,6 +124,8 @@
     background: linear-gradient(135deg, #ff6b35 0%, #ff006e 50%, #8338ec 100%);
 }
 
+=======
+>>>>>>> 91bc8483d67ce6bc40d26f29901371f66c48adb2
 .theme-option span {
     font-size: 14px;
     font-weight: 500;

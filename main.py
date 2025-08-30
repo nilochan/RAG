@@ -70,7 +70,7 @@ async def root():
 async def api_info():
     return {
         "message": "Educational RAG Platform API",
-        "version": "2.0.0",
+        "version": "2.0.1",
         "status": "operational",
         "features": [
             "File upload and processing",
