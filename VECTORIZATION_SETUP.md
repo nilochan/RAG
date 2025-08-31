@@ -13,7 +13,7 @@
 ### **Railway Environment Variables:**
 ```bash
 # Core API Keys
-DEEPSEEK_API_KEY="sk-73cfe16c65d14f01908d46e20fbd1a7b"
+DEEPSEEK_API_KEY="hidden"
 OPENAI_API_KEY="[your-openai-key]"  # For embeddings only
 
 # Pinecone Configuration - NEW INDEX (FIXED)
