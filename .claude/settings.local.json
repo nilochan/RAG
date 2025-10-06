@@ -17,7 +17,9 @@
       "WebFetch(domain:rag-chanchinthai.up.railway.app)",
       "WebFetch(domain:chanchinthai.up.railway.app)",
       "Bash(git clone:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(curl -X POST https://rag-chanchinthai.up.railway.app/query -H \"Content-Type: application/json\" -d '{\"\"\"\"question\"\"\"\": \"\"\"\"test\"\"\"\", \"\"\"\"use_uploaded_docs_only\"\"\"\": false, \"\"\"\"session_id\"\"\"\": \"\"\"\"test\"\"\"\"}' -v)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": [],
