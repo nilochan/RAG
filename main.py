@@ -36,6 +36,8 @@ progress_store: Dict[int, Dict] = {}
 # Initialize components
 document_processor = DocumentProcessor(os.getenv("PINECONE_INDEX_NAME", "educational-docs"))
 rag_system = EnhancedRAGSystem()
+# Enable Railway fallback mode for production reliability
+rag_system.railway_mode = True
 
 # Configure logging first (before using logger)
 logging.basicConfig(level=logging.INFO)
