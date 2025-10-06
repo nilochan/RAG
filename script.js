@@ -372,31 +372,139 @@ function renderDocuments() {
         `;
         return;
     }
-    
-    const documentsHTML = documents.map(doc => `
-        <div class="document-item">
-            <div class="document-info">
-                <div class="document-icon">
-                    <i class="fas ${getFileIcon(doc.filename)}"></i>
+
+    // Quick stats summary
+    const totalDocs = documents.length;
+    const completedDocs = documents.filter(d => d.status === 'completed').length;
+    const processingDocs = documents.filter(d => d.status === 'processing').length;
+    const failedDocs = documents.filter(d => d.status === 'failed').length;
+    const totalSize = documents.reduce((sum, doc) => sum + (doc.file_size || 0), 0);
+
+    const statsHTML = `
+        <div class="quick-stats">
+            <div class="stat-card blue">
+                <div class="stat-icon">
+                    <i class="fas fa-file-alt"></i>
                 </div>
-                <div class="document-details">
-                    <h4>${doc.filename}</h4>
-                    <div class="document-meta">
-                        ${formatFileSize(doc.file_size || 0)} • 
-                        Uploaded ${formatDate(doc.upload_time)} • 
-                        ${doc.chunk_count || 0} chunks
-                    </div>
+                <div class="stat-content">
+                    <div class="stat-label">Total</div>
+                    <div class="stat-value">${totalDocs}</div>
                 </div>
             </div>
-            <div class="document-status status-${doc.status}">
-                <i class="fas ${getStatusIcon(doc.status)}"></i>
-                <span>${formatStatus(doc.status)}</span>
-                ${doc.progress !== null ? `<span>(${doc.progress}%)</span>` : ''}
+            <div class="stat-card green">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Completed</div>
+                    <div class="stat-value">${completedDocs}</div>
+                </div>
+            </div>
+            <div class="stat-card orange">
+                <div class="stat-icon">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Processing</div>
+                    <div class="stat-value">${processingDocs}</div>
+                </div>
+            </div>
+            <div class="stat-card purple">
+                <div class="stat-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Total Size</div>
+                    <div class="stat-value">${formatFileSize(totalSize)}</div>
+                </div>
             </div>
         </div>
-    `).join('');
-    
-    elements.documentsList.innerHTML = documentsHTML;
+    `;
+
+    // Filters bar
+    const filtersHTML = `
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label class="filter-label">Status:</label>
+                <select class="filter-select" id="statusFilter">
+                    <option value="all">All Statuses</option>
+                    <option value="completed">Completed</option>
+                    <option value="processing">Processing</option>
+                    <option value="failed">Failed</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+            <input type="text" class="search-input" id="documentSearch" placeholder="Search documents...">
+        </div>
+    `;
+
+    // Enhanced table view
+    const tableHTML = `
+        <div class="documents-table-container">
+            <table class="documents-table">
+                <thead>
+                    <tr>
+                        <th>Document</th>
+                        <th>Size</th>
+                        <th>Chunks</th>
+                        <th>Upload Date</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${documents.map(doc => `
+                        <tr data-status="${doc.status}" data-filename="${doc.filename.toLowerCase()}">
+                            <td>
+                                <div class="document-name-cell">
+                                    <div class="doc-icon">
+                                        <i class="fas ${getFileIcon(doc.filename)}"></i>
+                                    </div>
+                                    <div>
+                                        <div class="doc-name">${doc.filename}</div>
+                                        <div class="doc-meta">${doc.chunk_count || 0} chunks</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${formatFileSize(doc.file_size || 0)}</td>
+                            <td>${doc.chunk_count || 0}</td>
+                            <td>${formatDate(doc.upload_time)}</td>
+                            <td>
+                                <span class="status-badge ${doc.status}">
+                                    <i class="fas ${getStatusIcon(doc.status)}"></i>
+                                    <span>${formatStatus(doc.status)}</span>
+                                </span>
+                            </td>
+                            <td>
+                                ${doc.progress !== null && doc.status === 'processing' ?
+                                    `<div class="progress-circle">
+                                        <svg width="60" height="60">
+                                            <defs>
+                                                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                    <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                                    <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                                                </linearGradient>
+                                            </defs>
+                                            <circle class="progress-circle-bg" cx="30" cy="30" r="26"></circle>
+                                            <circle class="progress-circle-fill" cx="30" cy="30" r="26"
+                                                stroke-dasharray="${2 * Math.PI * 26}"
+                                                stroke-dashoffset="${2 * Math.PI * 26 * (1 - doc.progress / 100)}"></circle>
+                                        </svg>
+                                        <span class="progress-percent">${doc.progress}%</span>
+                                    </div>`
+                                    : doc.status === 'completed' ? '<span style="color: #48bb78;">✓ Done</span>' : '—'}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    elements.documentsList.innerHTML = statsHTML + filtersHTML + tableHTML;
+
+    // Add filter functionality
+    setupDocumentFilters();
 }
 
 function getFileIcon(filename) {
@@ -442,6 +550,33 @@ function formatFileSize(bytes) {
 
 function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString();
+}
+
+// Document filtering functionality
+function setupDocumentFilters() {
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('documentSearch');
+
+    if (!statusFilter || !searchInput) return;
+
+    const filterDocuments = () => {
+        const selectedStatus = statusFilter.value;
+        const searchTerm = searchInput.value.toLowerCase();
+        const rows = document.querySelectorAll('.documents-table tbody tr');
+
+        rows.forEach(row => {
+            const status = row.dataset.status;
+            const filename = row.dataset.filename;
+
+            const statusMatch = selectedStatus === 'all' || status === selectedStatus;
+            const searchMatch = filename.includes(searchTerm);
+
+            row.style.display = (statusMatch && searchMatch) ? '' : 'none';
+        });
+    };
+
+    statusFilter.addEventListener('change', filterDocuments);
+    searchInput.addEventListener('input', filterDocuments);
 }
 
 // Chat Functions
@@ -594,32 +729,38 @@ async function loadAnalytics() {
 
 function renderAnalytics(data) {
     const analyticsHTML = `
-        <div class="analytics-item">
+        <div class="analytics-item blue">
+            <i class="fas fa-file-alt analytics-icon"></i>
             <div class="analytics-value">${data.documents?.total || 0}</div>
             <div class="analytics-label">Total Documents</div>
         </div>
-        <div class="analytics-item">
+        <div class="analytics-item green">
+            <i class="fas fa-check-circle analytics-icon"></i>
             <div class="analytics-value">${data.documents?.completed || 0}</div>
             <div class="analytics-label">Processed Successfully</div>
         </div>
-        <div class="analytics-item">
+        <div class="analytics-item purple">
+            <i class="fas fa-comments analytics-icon"></i>
             <div class="analytics-value">${data.queries?.total || 0}</div>
             <div class="analytics-label">Questions Asked</div>
         </div>
-        <div class="analytics-item">
-            <div class="analytics-value">${data.queries?.average_response_time || 0}s</div>
+        <div class="analytics-item orange">
+            <i class="fas fa-clock analytics-icon"></i>
+            <div class="analytics-value">${(data.queries?.average_response_time || 0).toFixed(2)}s</div>
             <div class="analytics-label">Avg Response Time</div>
         </div>
-        <div class="analytics-item">
+        <div class="analytics-item green">
+            <i class="fas fa-chart-line analytics-icon"></i>
             <div class="analytics-value">${Math.round(data.documents?.success_rate || 0)}%</div>
             <div class="analytics-label">Success Rate</div>
         </div>
-        <div class="analytics-item">
+        <div class="analytics-item blue">
+            <i class="fas fa-tasks analytics-icon"></i>
             <div class="analytics-value">${data.system?.active_processing_jobs || 0}</div>
             <div class="analytics-label">Active Jobs</div>
         </div>
     `;
-    
+
     elements.analyticsGrid.innerHTML = analyticsHTML;
 }
 
