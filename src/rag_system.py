@@ -101,7 +101,7 @@ class DeepSeekLLM(LLM):
             return f"I apologize, but I encountered an error while processing your request: {str(e)}"
 
 class EnhancedRAGSystem:
-    def __init__(self, temperature: float = 0.7, model: str = "deepseek-chat"):
+    def __init__(self, temperature: float = 0.7, model: str = "deepseek-reasoner"):
         self.temperature = temperature
         self.model = model
         
@@ -430,7 +430,7 @@ Answer:"""
                         "Content-Type": "application/json"
                     },
                     json={
-                        "model": "deepseek-chat",
+                        "model": "deepseek-reasoner",
                         "messages": [{"role": "user", "content": prompt}],
                         "temperature": 0.7,
                         "max_tokens": 500
@@ -464,7 +464,7 @@ Answer:"""
         """Get system statistics"""
         if hasattr(self, 'railway_mode') and self.railway_mode:
             return {
-                "model": getattr(self, 'model', 'deepseek-chat'),
+                "model": getattr(self, 'model', 'deepseek-reasoner'),
                 "temperature": getattr(self, 'temperature', 0.7),
                 "available_chains": ["railway_fallback"],
                 "status": "operational",
@@ -473,7 +473,7 @@ Answer:"""
             }
         else:
             return {
-                "model": self.llm.model if hasattr(self.llm, 'model') else 'deepseek-chat',
+                "model": self.llm.model if hasattr(self.llm, 'model') else 'deepseek-reasoner',
                 "temperature": getattr(self.llm, 'temperature', 0.7),
                 "available_chains": ["document", "general", "hybrid"],
                 "status": "operational",
