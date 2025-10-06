@@ -4,175 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Educational RAG Platform</title>
-    <!-- FORCE UPDATE: 2025-10-06 - Enhanced UI/UX Dashboard Design -->
-    <meta name="cache-control" content="no-cache">
-    <meta name="expires" content="0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎓</text></svg>">
-    <link rel="stylesheet" href="styles.css?v=20251006" id="mainStyles">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#ec4899',
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
+<body class="bg-gray-50">
     <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <i class="fas fa-graduation-cap"></i>
-                    <h1>Educational RAG Platform</h1>
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-graduation-cap text-indigo-600 text-3xl"></i>
+                    <h1 class="text-2xl font-bold text-gray-900">Educational RAG Platform</h1>
                 </div>
-                <div class="header-right">
-                    <div class="status-indicator">
-                        <div class="status-dot" id="statusDot"></div>
-                        <span id="statusText">Connecting...</span>
-                    </div>
+                <div class="flex items-center space-x-2 px-4 py-2 rounded-full bg-gray-100">
+                    <div class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse" id="statusDot"></div>
+                    <span id="statusText" class="text-sm font-semibold text-gray-700">Connecting...</span>
                 </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="main">
-        <div class="container">
-            <!-- Connection Status Card -->
-            <div class="card" id="statusCard">
-                <div class="card-header">
-                    <i class="fas fa-server"></i>
-                    <h2>System Status</h2>
-                    <button class="btn btn-secondary btn-sm" id="refreshStatus">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="system-status" id="systemStatus">
-                        <div class="loading">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <span>Checking system status...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-            <!-- Document Upload Section -->
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <h2>Document Upload</h2>
-                </div>
-                <div class="card-body">
-                    <div class="upload-area" id="uploadArea">
-                        <div class="upload-icon">
-                            <i class="fas fa-file-upload"></i>
-                        </div>
-                        <h3>Drag and drop your documents here</h3>
-                        <p>or <strong>click to browse</strong> (multiple files supported)</p>
-                        <p class="file-types">Supports: PDF, DOCX, TXT, CSV, XLSX (max 50MB each)</p>
-                        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.csv,.xlsx" multiple hidden>
+        <!-- System Status Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-600 p-3 rounded-lg shadow-lg">
+                        <i class="fas fa-server text-white text-xl"></i>
                     </div>
-                    
-                    <div class="upload-progress" id="uploadProgress" style="display: none;">
-                        <div class="progress-info">
-                            <span id="uploadFileName"></span>
-                            <span id="uploadStatus"></span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill"></div>
-                        </div>
-                        <div class="progress-details" id="progressDetails"></div>
-                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">System Status</h2>
                 </div>
+                <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center space-x-2 shadow-sm hover:shadow" id="refreshStatus">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh</span>
+                </button>
             </div>
-
-            <!-- Documents List -->
-            <div class="card" id="documentsCard" style="display: none;">
-                <div class="card-header">
-                    <i class="fas fa-file-alt"></i>
-                    <h2>Uploaded Documents</h2>
-                    <button class="btn btn-secondary btn-sm" id="refreshDocs">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="documents-list" id="documentsList"></div>
-                </div>
-            </div>
-
-            <!-- Q&A Section -->
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-comments"></i>
-                    <h2>Ask Questions</h2>
-                    <div class="qa-options">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="useDocsOnly">
-                            <span class="toggle-slider"></span>
-                            <span class="toggle-label">Use uploaded docs only</span>
-                        </label>
+            <div class="p-6">
+                <div id="systemStatus">
+                    <div class="flex items-center justify-center py-8">
+                        <i class="fas fa-spinner fa-spin text-indigo-600 text-2xl mr-3"></i>
+                        <span class="text-gray-600">Checking system status...</span>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="chat-container" id="chatContainer">
-                        <div class="welcome-message">
-                            <i class="fas fa-robot"></i>
-                            <h3>Welcome to DeepSeek AI Assistant</h3>
-                            <p>Ask me anything! I can answer questions about your uploaded documents or provide general knowledge.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="input-area">
-                        <div class="input-group">
-                            <textarea 
-                                id="questionInput" 
-                                placeholder="Ask a question about your documents or anything else..."
-                                rows="3"
-                                maxlength="1000"
-                            ></textarea>
-                            <button class="btn btn-primary" id="askButton">
-                                <i class="fas fa-paper-plane"></i>
-                                <span>Ask</span>
-                            </button>
-                        </div>
-                        <div class="input-info">
-                            <span class="char-count"><span id="charCount">0</span>/1000</span>
-                            <span class="ai-info">Powered by DeepSeek AI</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analytics Dashboard -->
-            <div class="card" id="analyticsCard" style="display: none;">
-                <div class="card-header">
-                    <i class="fas fa-chart-line"></i>
-                    <h2>Analytics</h2>
-                    <button class="btn btn-secondary btn-sm" id="refreshAnalytics">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="analytics-grid" id="analyticsGrid"></div>
                 </div>
             </div>
         </div>
+
+        <!-- Document Upload Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 p-3 rounded-lg shadow-lg">
+                        <i class="fas fa-cloud-upload-alt text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Document Upload</h2>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-indigo-500 hover:bg-indigo-50/30 transition-all cursor-pointer" id="uploadArea">
+                    <i class="fas fa-file-upload text-gray-400 text-5xl mb-4"></i>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Drag and drop your documents here</h3>
+                    <p class="text-gray-600 mb-1">or <strong class="text-indigo-600">click to browse</strong> (multiple files supported)</p>
+                    <p class="text-sm text-gray-500 mt-2">Supports: PDF, DOCX, TXT, CSV, XLSX (max 50MB each)</p>
+                    <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.csv,.xlsx" multiple hidden>
+                </div>
+
+                <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 hidden" id="uploadProgress">
+                    <div class="flex justify-between mb-2">
+                        <span id="uploadFileName" class="font-medium text-gray-900"></span>
+                        <span id="uploadStatus" class="text-blue-600 font-medium"></span>
+                    </div>
+                    <div class="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div id="progressDetails" class="mt-2 text-sm text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents List Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 hidden" id="documentsCard">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-green-600 p-3 rounded-lg shadow-lg">
+                        <i class="fas fa-file-alt text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Uploaded Documents</h2>
+                </div>
+                <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center space-x-2 shadow-sm hover:shadow" id="refreshDocs">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+            <div class="p-6">
+                <div id="documentsList"></div>
+            </div>
+        </div>
+
+        <!-- Ask Questions Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-purple-600 p-3 rounded-lg shadow-lg">
+                            <i class="fas fa-comments text-white text-xl"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900">Ask Questions</h2>
+                    </div>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="useDocsOnly" class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                        <span class="text-sm font-medium text-gray-700">Use uploaded docs only</span>
+                    </label>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4 min-h-[400px] max-h-[500px] overflow-y-auto" id="chatContainer">
+                    <div class="text-center py-12">
+                        <i class="fas fa-robot text-gray-400 text-5xl mb-4"></i>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Welcome to DeepSeek AI Assistant</h3>
+                        <p class="text-gray-600">Ask me anything! I can answer questions about your uploaded documents or provide general knowledge.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex space-x-3">
+                        <textarea
+                            id="questionInput"
+                            placeholder="Ask a question about your documents or anything else..."
+                            rows="3"
+                            maxlength="1000"
+                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                        ></textarea>
+                        <button class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-md hover:shadow-lg flex items-center space-x-2" id="askButton">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Ask</span>
+                        </button>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-500">
+                        <span><span id="charCount">0</span>/1000</span>
+                        <span>Powered by DeepSeek AI</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 hidden" id="analyticsCard">
+            <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-orange-600 p-3 rounded-lg shadow-lg">
+                        <i class="fas fa-chart-line text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Analytics</h2>
+                </div>
+                <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center space-x-2 shadow-sm hover:shadow" id="refreshAnalytics">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="analyticsGrid"></div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 Educational RAG Platform | Powered by DeepSeek AI & Railway</p>
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <p class="text-center text-gray-600 text-sm">&copy; 2024 Educational RAG Platform | Powered by DeepSeek AI & Railway</p>
         </div>
     </footer>
 
     <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
-        <div class="loading-content">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p id="loadingText">Processing...</p>
+    <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center hidden" id="loadingOverlay">
+        <div class="bg-white rounded-xl p-8 shadow-2xl text-center">
+            <i class="fas fa-spinner fa-spin text-indigo-600 text-4xl mb-4"></i>
+            <p id="loadingText" class="text-lg font-semibold text-gray-900">Processing...</p>
         </div>
     </div>
 
-    <!-- Toast Notifications -->
-    <div class="toast-container" id="toastContainer"></div>
+    <!-- Toast Container -->
+    <div class="fixed top-4 right-4 z-50 space-y-2" id="toastContainer"></div>
 
     <script src="script.js?v=20251006"></script>
 </body>

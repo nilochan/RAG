@@ -92,38 +92,43 @@ async function checkSystemStatus() {
 
 function updateSystemStatus(data, status) {
     // Update header status
-    elements.statusDot.className = `status-dot ${status}`;
-    elements.statusText.textContent = status === 'online' ? 'Connected' : 'Disconnected';
-    
+    if (status === 'online') {
+        elements.statusDot.className = 'w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse';
+        elements.statusText.textContent = 'Connected';
+    } else {
+        elements.statusDot.className = 'w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse';
+        elements.statusText.textContent = 'Disconnected';
+    }
+
     if (data && status === 'online') {
         const statusHTML = `
-            <div class="status-grid">
-                ${Object.entries(data.components).map(([component, status]) => `
-                    <div class="status-item ${status !== 'operational' ? 'warning' : ''}">
-                        <div class="status-icon">
-                            <i class="fas ${getComponentIcon(component)}"></i>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${Object.entries(data.components).map(([component, componentStatus]) => `
+                    <div class="flex items-center space-x-4 p-4 bg-${componentStatus === 'operational' ? 'green' : 'yellow'}-50 border border-${componentStatus === 'operational' ? 'green' : 'yellow'}-200 rounded-lg">
+                        <div class="bg-${componentStatus === 'operational' ? 'green' : 'yellow'}-600 p-3 rounded-lg">
+                            <i class="fas ${getComponentIcon(component)} text-white text-xl"></i>
                         </div>
-                        <div class="status-info">
-                            <h4>${formatComponentName(component)}</h4>
-                            <p>${status}</p>
+                        <div>
+                            <h4 class="font-bold text-gray-900">${formatComponentName(component)}</h4>
+                            <p class="text-sm text-gray-600">${componentStatus}</p>
                         </div>
                     </div>
                 `).join('')}
             </div>
-            <div style="margin-top: 1rem; text-align: center; font-size: 0.875rem; color: #718096;">
+            <div class="mt-4 text-center text-sm text-gray-500">
                 Last updated: ${new Date(data.timestamp).toLocaleString()}
             </div>
         `;
         elements.systemStatus.innerHTML = statusHTML;
     } else {
         elements.systemStatus.innerHTML = `
-            <div class="status-item error">
-                <div class="status-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
+            <div class="flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div class="bg-red-600 p-3 rounded-lg">
+                    <i class="fas fa-exclamation-triangle text-white text-xl"></i>
                 </div>
-                <div class="status-info">
-                    <h4>Connection Failed</h4>
-                    <p>Unable to reach backend server</p>
+                <div>
+                    <h4 class="font-bold text-gray-900">Connection Failed</h4>
+                    <p class="text-sm text-gray-600">Unable to reach backend server</p>
                 </div>
             </div>
         `;
@@ -268,16 +273,16 @@ async function handleFileUpload(file) {
 }
 
 function showUploadProgress(fileName) {
-    elements.uploadArea.style.display = 'none';
-    elements.uploadProgress.style.display = 'block';
+    elements.uploadArea.classList.add('hidden');
+    elements.uploadProgress.classList.remove('hidden');
     elements.uploadFileName.textContent = fileName;
     elements.uploadStatus.textContent = 'Uploading...';
     elements.progressFill.style.width = '0%';
 }
 
 function hideUploadProgress() {
-    elements.uploadArea.style.display = 'block';
-    elements.uploadProgress.style.display = 'none';
+    elements.uploadArea.classList.remove('hidden');
+    elements.uploadProgress.classList.add('hidden');
 }
 
 async function trackUploadProgress(documentId) {
@@ -765,50 +770,60 @@ function renderAnalytics(data) {
 // Utility Functions
 function showLoading(text = 'Loading...') {
     elements.loadingText.textContent = text;
-    elements.loadingOverlay.style.display = 'flex';
+    elements.loadingOverlay.classList.remove('hidden');
 }
 
 function hideLoading() {
-    elements.loadingOverlay.style.display = 'none';
+    elements.loadingOverlay.classList.add('hidden');
 }
 
 function showToast(title, message, type = 'success') {
     const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    const iconMap = {
-        success: 'fa-check-circle',
-        error: 'fa-exclamation-circle',
-        warning: 'fa-exclamation-triangle',
-        info: 'fa-info-circle'
+
+    const colorMap = {
+        success: 'bg-green-50 border-green-200 text-green-800',
+        error: 'bg-red-50 border-red-200 text-red-800',
+        warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+        info: 'bg-blue-50 border-blue-200 text-blue-800'
     };
-    
+
+    const iconMap = {
+        success: 'fa-check-circle text-green-600',
+        error: 'fa-exclamation-circle text-red-600',
+        warning: 'fa-exclamation-triangle text-yellow-600',
+        info: 'fa-info-circle text-blue-600'
+    };
+
+    toast.className = `${colorMap[type]} border rounded-lg shadow-lg p-4 flex items-start space-x-3 animate-fade-in`;
+
     toast.innerHTML = `
-        <div class="toast-content">
-            <div class="toast-icon">
-                <i class="fas ${iconMap[type]}"></i>
-            </div>
-            <div class="toast-text">
-                <div class="toast-title">${title}</div>
-                <div class="toast-message">${message}</div>
-            </div>
+        <i class="fas ${iconMap[type]} text-xl mt-0.5"></i>
+        <div class="flex-1">
+            <div class="font-bold mb-1">${title}</div>
+            <div class="text-sm">${message}</div>
         </div>
     `;
-    
+
     elements.toastContainer.appendChild(toast);
-    
+
     // Auto remove after 5 seconds
     setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
     }, 5000);
-    
+
     // Remove on click
     toast.addEventListener('click', () => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
     });
 }
 
