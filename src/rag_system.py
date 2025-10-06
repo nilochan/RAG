@@ -376,31 +376,39 @@ class EnhancedRAGSystem:
         try:
             # Build context from documents if available
             context = ""
-            if documents:
+            if documents and len(documents) > 0:
                 context_parts = []
-                for i, doc in enumerate(documents[:3]):
+                # Use top 5 documents instead of 3 for better coverage
+                for i, doc in enumerate(documents[:5]):
                     if hasattr(doc, 'page_content'):
                         source = getattr(doc, 'metadata', {}).get('source', f'Document {i+1}')
-                        content = doc.page_content[:500] + "..." if len(doc.page_content) > 500 else doc.page_content
-                        context_parts.append(f"Source: {source}\\nContent: {content}")
+                        # Increase chunk size to 2000 characters for better context
+                        content = doc.page_content[:2000] + "..." if len(doc.page_content) > 2000 else doc.page_content
+                        context_parts.append(f"[Source {i+1}: {source}]\\n{content}")
                 context = "\\n\\n---\\n\\n".join(context_parts)
-            
+                logger.info(f"Built context from {len(context_parts)} document chunks, total length: {len(context)}")
+
             # Create prompt based on whether we have context
             if context:
-                prompt = f"""You are an educational AI assistant. Answer the question based on the provided context from uploaded documents.
+                prompt = f"""You are an expert educational AI assistant analyzing uploaded documents.
 
-Context from documents:
+IMPORTANT: You MUST answer based ONLY on the provided document context below. DO NOT use general knowledge.
+
+=== DOCUMENT CONTEXT ===
 {context}
+=== END CONTEXT ===
 
-Question: {question}
+QUESTION: {question}
 
-Instructions:
-- Provide a clear, educational answer based on the context
-- If the context doesn't fully answer the question, say so and provide what you can
-- Use examples from the context when possible
-- Be concise but comprehensive
+INSTRUCTIONS:
+- Answer STRICTLY using information from the document context above
+- Quote specific parts from the documents when relevant
+- If the documents contain the answer, provide detailed information from them
+- If the documents don't contain enough information, explicitly state what's missing
+- DO NOT make up information or use external knowledge
+- Reference the source numbers [Source 1], [Source 2], etc. in your answer
 
-Answer:"""
+ANSWER:"""
             else:
                 prompt = f"""You are an educational AI assistant. Answer this question using your general knowledge.
 
@@ -412,7 +420,7 @@ Instructions:
 - Be encouraging and supportive
 
 Answer:"""
-            
+
             # Direct DeepSeek API call
             api_key = os.getenv("DEEPSEEK_API_KEY")
             if not api_key:
@@ -421,8 +429,9 @@ Answer:"""
                     "source_type": "error",
                     "strategy_used": "railway_error"
                 }
-            
-            async with httpx.AsyncClient(timeout=30.0) as client:
+
+            # Increase timeout to 60s for Reasoner model (it needs time to think)
+            async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(
                     "https://api.deepseek.com/v1/chat/completions",
                     headers={
@@ -432,8 +441,8 @@ Answer:"""
                     json={
                         "model": "deepseek-reasoner",
                         "messages": [{"role": "user", "content": prompt}],
-                        "temperature": 0.7,
-                        "max_tokens": 500
+                        "temperature": 0.3,  # Lower temperature for more focused answers
+                        "max_tokens": 4000   # Increased from 500 to 4000 for detailed answers
                     }
                 )
                 
