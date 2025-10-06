@@ -441,61 +441,59 @@ function renderDocuments() {
         </div>
     `;
 
-    // Enhanced table view
+    // Enhanced table view with Tailwind styling
     const tableHTML = `
-        <div class="documents-table-container">
-            <table class="documents-table">
-                <thead>
+        <div class="overflow-x-auto rounded-lg border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gradient-to-r from-green-50 to-emerald-50">
                     <tr>
-                        <th>Document</th>
-                        <th>Size</th>
-                        <th>Chunks</th>
-                        <th>Upload Date</th>
-                        <th>Status</th>
-                        <th>Progress</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Document</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Size</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Chunks</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Upload Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="bg-white divide-y divide-gray-200">
                     ${documents.map(doc => `
-                        <tr data-status="${doc.status}" data-filename="${doc.filename.toLowerCase()}">
-                            <td>
-                                <div class="document-name-cell">
-                                    <div class="doc-icon">
-                                        <i class="fas ${getFileIcon(doc.filename)}"></i>
+                        <tr class="hover:bg-green-50 transition-colors" data-status="${doc.status}" data-filename="${doc.filename.toLowerCase()}">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas ${getFileIcon(doc.filename)} text-green-600 text-lg"></i>
                                     </div>
                                     <div>
-                                        <div class="doc-name">${doc.filename}</div>
-                                        <div class="doc-meta">${doc.chunk_count || 0} chunks</div>
+                                        <div class="font-semibold text-gray-900">${doc.filename}</div>
+                                        <div class="text-sm text-gray-500">${doc.chunk_count || 0} chunks</div>
                                     </div>
                                 </div>
                             </td>
-                            <td>${formatFileSize(doc.file_size || 0)}</td>
-                            <td>${doc.chunk_count || 0}</td>
-                            <td>${formatDate(doc.upload_time)}</td>
-                            <td>
-                                <span class="status-badge ${doc.status}">
-                                    <i class="fas ${getStatusIcon(doc.status)}"></i>
-                                    <span>${formatStatus(doc.status)}</span>
-                                </span>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-sm font-medium text-gray-900">${formatFileSize(doc.file_size || 0)}</span>
                             </td>
-                            <td>
-                                ${doc.progress !== null && doc.status === 'processing' ?
-                                    `<div class="progress-circle">
-                                        <svg width="60" height="60">
-                                            <defs>
-                                                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                    <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                                                    <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
-                                                </linearGradient>
-                                            </defs>
-                                            <circle class="progress-circle-bg" cx="30" cy="30" r="26"></circle>
-                                            <circle class="progress-circle-fill" cx="30" cy="30" r="26"
-                                                stroke-dasharray="${2 * Math.PI * 26}"
-                                                stroke-dashoffset="${2 * Math.PI * 26 * (1 - doc.progress / 100)}"></circle>
-                                        </svg>
-                                        <span class="progress-percent">${doc.progress}%</span>
-                                    </div>`
-                                    : doc.status === 'completed' ? '<span style="color: #48bb78;">✓ Done</span>' : '—'}
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-sm text-gray-900">${doc.chunk_count || 0}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-sm text-gray-500">${formatDate(doc.upload_time)}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                ${doc.status === 'completed' ?
+                                    `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i> Completed
+                                    </span>` :
+                                doc.status === 'processing' ?
+                                    `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                        <i class="fas fa-spinner fa-spin mr-1"></i> Processing ${doc.progress || 0}%
+                                    </span>` :
+                                doc.status === 'failed' ?
+                                    `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-circle mr-1"></i> Failed
+                                    </span>` :
+                                    `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                        <i class="fas fa-clock mr-1"></i> Pending
+                                    </span>`
+                                }
                             </td>
                         </tr>
                     `).join('')}
