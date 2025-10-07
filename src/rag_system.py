@@ -410,6 +410,16 @@ INSTRUCTIONS:
 - Place citations at the end of relevant sentences (e.g., "IBM uses AI in HR¹.")
 - Do NOT use [Source 1] format, use superscript numbers instead
 
+FORMATTING GUIDELINES:
+- Structure your answer with clear sections using markdown headers (##)
+- For summaries/overviews: Use "## Summary" + "## Key Points" + "## Details"
+- For comparisons: Use "## Comparison" + table format + "## Analysis"
+- For explanations: Use "## Overview" + "## Detailed Explanation" + "## Examples"
+- For lists/questions: Use "## Main Points" with numbered or bulleted lists
+- Always end complex answers with "## Conclusion" if appropriate
+- Use bullet points (•) and numbered lists for clarity
+- Format tables with markdown if comparing items
+
 ANSWER:"""
             else:
                 prompt = f"""You are an educational AI assistant. Answer this question using your general knowledge.
