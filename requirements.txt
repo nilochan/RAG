@@ -8,10 +8,12 @@ pydantic==2.4.2
 # AI/ML Stack (Essential only)
 langchain==0.1.0
 langchain-openai==0.0.5
+langchain-huggingface==0.0.1
 langchain-pinecone==0.0.3
 openai==1.12.0
 pinecone-client==3.0.0
 httpx==0.25.2
+sentence-transformers==2.2.2
 
 # Document Processing (Essential only)
 PyPDF2==3.0.1

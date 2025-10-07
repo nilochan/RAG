@@ -8,6 +8,7 @@ import pandas as pd
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 from langchain_openai import OpenAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_pinecone import PineconeVectorStore
 import logging
 import asyncio
@@ -25,60 +26,65 @@ class DocumentProcessor:
             separators=["\n\n", "\n", ". ", "! ", "? ", " ", ""]
         )
         
-        # Initialize embeddings conditionally (only if OpenAI key is available)
+        # Initialize embeddings conditionally
         self.embeddings = None
         self.vectorstore = None
-        
-        # ✅ FIXED: Dimension mismatch resolved with new Pinecone index
-        # New index: educational-docs-openai (1536 dimensions)
-        # OpenAI model: text-embedding-3-small (1536 dimensions)
-        
-        openai_api_key = os.getenv("OPENAI_API_KEY")
-        if openai_api_key:
+
+        # 🆓 FREE EMBEDDINGS: Use HuggingFace sentence-transformers (no API key needed!)
+        # Model: all-MiniLM-L6-v2 (384 dimensions, fast, high quality)
+        # Completely free, runs locally, no rate limits!
+
+        # Try HuggingFace embeddings first (FREE!)
+        try:
+            logger.info("🤗 Initializing FREE HuggingFace embeddings (all-MiniLM-L6-v2)...")
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name="sentence-transformers/all-MiniLM-L6-v2",
+                model_kwargs={'device': 'cpu'},  # Run on CPU (Railway compatible)
+                encode_kwargs={'normalize_embeddings': True}
+            )
+            logger.info("✅ HuggingFace embeddings loaded successfully (384 dimensions)")
+        except Exception as hf_error:
+            logger.warning(f"⚠️ HuggingFace embeddings failed: {hf_error}")
+            # Fallback to OpenAI if available
+            openai_api_key = os.getenv("OPENAI_API_KEY")
+            if openai_api_key:
+                logger.info("🔄 Falling back to OpenAI embeddings...")
+            else:
+                logger.error("❌ No embedding solution available!")
+                self.embeddings = None
+
+        # Initialize Pinecone vectorstore if embeddings are available
+        if self.embeddings:
+            pinecone_api_key = os.getenv("PINECONE_API_KEY")
+            pinecone_host = os.getenv("PINECONE_HOST")
+
             try:
-                # Use text-embedding-3-small model to match new Pinecone index
-                self.embeddings = OpenAIEmbeddings(
-                    openai_api_key=openai_api_key,
-                    model="text-embedding-3-small",  # 1536 dimensions - matches new index!
-                )
-                
-                # Initialize Pinecone with new index (educational-docs-openai)
-                pinecone_api_key = os.getenv("PINECONE_API_KEY")
-                pinecone_host = os.getenv("PINECONE_HOST")
-                
                 if pinecone_host and pinecone_api_key:
-                    try:
-                        self.vectorstore = PineconeVectorStore(
-                            index_name=pinecone_index_name,  # Should be "educational-docs-openai"
-                            embedding=self.embeddings,
-                            pinecone_api_key=pinecone_api_key
-                        )
-                        logger.info("✅ Pinecone vectorstore initialized successfully")
-                        logger.info(f"📊 Index: {pinecone_index_name} | Model: text-embedding-3-small | Dims: 1536")
-                    except Exception as pinecone_error:
-                        logger.error(f"❌ Pinecone connection failed: {pinecone_error}")
-                        logger.info("🔄 Falling back to text-only mode")
-                        self.vectorstore = None
-                        self.embeddings = None
-                else:
-                    # Traditional Pinecone setup (fallback)
-                    logger.warning("No PINECONE_HOST found, trying traditional setup")
-                    pinecone_environment = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
+                    # Use HuggingFace index (384 dimensions)
+                    if isinstance(self.embeddings, HuggingFaceEmbeddings):
+                        index_name = "educational-docs-hf"  # New index for HuggingFace (384 dims)
+                        logger.info(f"📊 Using HuggingFace index: {index_name} (384 dimensions)")
+                    else:
+                        index_name = pinecone_index_name  # OpenAI index (1536 dims)
+                        logger.info(f"📊 Using OpenAI index: {index_name} (1536 dimensions)")
+
                     self.vectorstore = PineconeVectorStore(
-                        index_name=pinecone_index_name,
-                        embedding=self.embeddings
+                        index_name=index_name,
+                        embedding=self.embeddings,
+                        pinecone_api_key=pinecone_api_key
                     )
-                    
-                if self.vectorstore:
-                    logger.info("✅ Document processor initialized with OpenAI embeddings and Pinecone")
+                    logger.info("✅ Pinecone vectorstore initialized successfully")
                 else:
-                    logger.info("📝 Document processor in text-only mode")
-                    
+                    logger.warning("⚠️ No PINECONE_HOST or PINECONE_API_KEY - skipping vectorstore")
+                    self.vectorstore = None
+
             except Exception as e:
-                logger.warning(f"⚠️ Could not initialize embeddings/vector store: {e}")
-                logger.info("📝 Document processor will work in text-only mode (no vector search)")
+                logger.error(f"❌ Pinecone initialization failed: {e}")
+                logger.info("📝 Falling back to text-only mode")
+                self.vectorstore = None
         else:
-            logger.info("📝 No OPENAI_API_KEY found - Document processor in text-only mode")
+            logger.warning("❌ No embeddings available - running in text-only mode")
+
         self.progress_callbacks: Dict[int, Callable] = {}
     
     def register_progress_callback(self, doc_id: int, callback: Callable[[int], None]):
