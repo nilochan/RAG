@@ -434,9 +434,15 @@ async def query_documents(request: QueryRequest, db: Session = Depends(get_db)):
         relevant_docs = []
         if completed_docs:
             doc_ids = [doc.id for doc in completed_docs]
+            logger.info(f"🔍 Searching for documents with IDs: {doc_ids}")
             relevant_docs = document_processor.search_documents(
                 request.question, doc_ids=doc_ids, k=5
             )
+            logger.info(f"📄 Found {len(relevant_docs)} relevant document chunks")
+            if not relevant_docs:
+                logger.warning(f"⚠️ No relevant documents found! Vectorstore status: {document_processor.vectorstore is not None}")
+        else:
+            logger.warning("⚠️ No completed documents available in database")
         
         # Use intelligent answering strategy
         strategy = "docs_only" if request.use_uploaded_docs_only else "auto"

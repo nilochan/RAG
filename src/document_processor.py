@@ -269,19 +269,28 @@ class DocumentProcessor:
         """Search through processed documents"""
         try:
             if not self.vectorstore:
-                logger.warning("⚠️ Vector search not available - no embeddings configured")
+                logger.error("❌ CRITICAL: Vector search not available - Pinecone vectorstore not initialized!")
+                logger.error(f"❌ OpenAI API Key present: {bool(os.getenv('OPENAI_API_KEY'))}")
+                logger.error(f"❌ Pinecone API Key present: {bool(os.getenv('PINECONE_API_KEY'))}")
+                logger.error(f"❌ Pinecone Host present: {bool(os.getenv('PINECONE_HOST'))}")
                 return []
-                
+
             if doc_ids:
                 # Filter by specific document IDs
                 filter_dict = {"doc_id": {"$in": doc_ids}}
+                logger.info(f"🔍 Searching Pinecone with filter: {filter_dict}, k={k}")
                 docs = self.vectorstore.similarity_search(query, k=k, filter=filter_dict)
+                logger.info(f"✅ Pinecone returned {len(docs)} documents")
             else:
+                logger.info(f"🔍 Searching Pinecone without filter, k={k}")
                 docs = self.vectorstore.similarity_search(query, k=k)
-            
+                logger.info(f"✅ Pinecone returned {len(docs)} documents")
+
             return docs
         except Exception as e:
-            logger.error(f"Error searching documents: {e}")
+            logger.error(f"❌ Error searching documents: {e}")
+            logger.error(f"❌ Query was: {query}")
+            logger.error(f"❌ doc_ids filter: {doc_ids}")
             return []
     
     def delete_document_vectors(self, vector_ids: List[str]) -> bool:
