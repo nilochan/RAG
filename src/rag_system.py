@@ -406,7 +406,9 @@ INSTRUCTIONS:
 - If the documents contain the answer, provide detailed information from them
 - If the documents don't contain enough information, explicitly state what's missing
 - DO NOT make up information or use external knowledge
-- Reference the source numbers [Source 1], [Source 2], etc. in your answer
+- Use SUPERSCRIPT citations like ¹, ², ³, etc. to reference sources
+- Place citations at the end of relevant sentences (e.g., "IBM uses AI in HR¹.")
+- Do NOT use [Source 1] format, use superscript numbers instead
 
 ANSWER:"""
             else:
