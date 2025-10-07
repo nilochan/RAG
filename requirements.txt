@@ -13,12 +13,8 @@ langchain-pinecone==0.0.3
 openai==1.12.0
 pinecone-client==3.0.0
 httpx==0.25.2
-# HuggingFace embeddings - lightweight installation
-huggingface-hub==0.20.3
-tokenizers==0.15.2
-transformers==4.37.2
-torch==2.1.2
-sentencepiece==0.1.99
+# HuggingFace embeddings - using sentence-transformers
+sentence-transformers==2.3.1
 
 # Document Processing (Essential only)
 PyPDF2==3.0.1
