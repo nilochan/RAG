@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Educational RAG Platform</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎓</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📚</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Marked.js for Markdown Rendering -->
@@ -26,10 +26,10 @@
     <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-4">
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-graduation-cap text-indigo-600 text-3xl"></i>
-                    <h1 class="text-2xl font-bold text-gray-900">Educational RAG Platform</h1>
+            <div class="flex justify-between items-center py-3">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-book-reader text-indigo-600 text-2xl"></i>
+                    <h1 class="text-xl font-bold text-gray-900">Educational RAG Platform</h1>
                 </div>
                 <div class="flex items-center space-x-2 px-4 py-2 rounded-full bg-gray-100">
                     <div class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse" id="statusDot"></div>
@@ -43,16 +43,16 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <!-- System Status Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-indigo-600 p-3 rounded-lg shadow-lg">
-                        <i class="fas fa-server text-white text-xl"></i>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4">
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-indigo-600 p-2 rounded-lg shadow-sm">
+                        <i class="fas fa-server text-white text-sm"></i>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-900">System Status</h2>
+                    <h2 class="text-base font-bold text-gray-900">System Status</h2>
                 </div>
-                <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center space-x-2 shadow-sm hover:shadow" id="refreshStatus">
-                    <i class="fas fa-sync-alt"></i>
+                <button class="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center space-x-1.5 shadow-sm hover:shadow" id="refreshStatus">
+                    <i class="fas fa-sync-alt text-xs"></i>
                     <span>Refresh</span>
                 </button>
             </div>
@@ -67,13 +67,13 @@
         </div>
 
         <!-- Document Upload Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-4 border-b border-gray-200">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-blue-600 p-3 rounded-lg shadow-lg">
-                        <i class="fas fa-cloud-upload-alt text-white text-xl"></i>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4">
+            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-2.5 border-b border-gray-200">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-blue-600 p-2 rounded-lg shadow-sm">
+                        <i class="fas fa-cloud-upload-alt text-white text-sm"></i>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-900">Document Upload</h2>
+                    <h2 class="text-base font-bold text-gray-900">Document Upload</h2>
                 </div>
             </div>
             <div class="p-6">
@@ -99,16 +99,16 @@
         </div>
 
         <!-- Documents List Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 hidden" id="documentsCard">
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-green-600 p-3 rounded-lg shadow-lg">
-                        <i class="fas fa-file-alt text-white text-xl"></i>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 hidden" id="documentsCard">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-green-600 p-2 rounded-lg shadow-sm">
+                        <i class="fas fa-file-alt text-white text-sm"></i>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-900">Uploaded Documents</h2>
+                    <h2 class="text-base font-bold text-gray-900">Uploaded Documents</h2>
                 </div>
-                <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center space-x-2 shadow-sm hover:shadow" id="refreshDocs">
-                    <i class="fas fa-sync-alt"></i>
+                <button class="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center space-x-1.5 shadow-sm hover:shadow" id="refreshDocs">
+                    <i class="fas fa-sync-alt text-xs"></i>
                     <span>Refresh</span>
                 </button>
             </div>
@@ -118,14 +118,14 @@
         </div>
 
         <!-- Ask Questions Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-            <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4">
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-2.5 border-b border-gray-200">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="bg-purple-600 p-3 rounded-lg shadow-lg">
-                            <i class="fas fa-comments text-white text-xl"></i>
+                    <div class="flex items-center space-x-2">
+                        <div class="bg-purple-600 p-2 rounded-lg shadow-sm">
+                            <i class="fas fa-comments text-white text-sm"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-gray-900">Ask Questions</h2>
+                        <h2 class="text-base font-bold text-gray-900">Ask Questions</h2>
                     </div>
                     <label class="flex items-center space-x-2 cursor-pointer">
                         <input type="checkbox" id="useDocsOnly" class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
@@ -165,16 +165,16 @@
         </div>
 
         <!-- Analytics Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 hidden" id="analyticsCard">
-            <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-orange-600 p-3 rounded-lg shadow-lg">
-                        <i class="fas fa-chart-line text-white text-xl"></i>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-4 hidden" id="analyticsCard">
+            <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-orange-600 p-2 rounded-lg shadow-sm">
+                        <i class="fas fa-chart-line text-white text-sm"></i>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-900">Analytics</h2>
+                    <h2 class="text-base font-bold text-gray-900">Analytics</h2>
                 </div>
-                <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center space-x-2 shadow-sm hover:shadow" id="refreshAnalytics">
-                    <i class="fas fa-sync-alt"></i>
+                <button class="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-all flex items-center space-x-1.5 shadow-sm hover:shadow" id="refreshAnalytics">
+                    <i class="fas fa-sync-alt text-xs"></i>
                     <span>Refresh</span>
                 </button>
             </div>
