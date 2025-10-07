@@ -303,60 +303,100 @@ function hideUploadProgress() {
 }
 
 async function trackUploadProgress(documentId) {
-    const maxAttempts = 60; // 5 minutes max
+    const maxAttempts = 120; // 10 minutes max (increased from 5)
     let attempts = 0;
-    
+
     const trackProgress = async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/documents/${documentId}/progress`);
             const data = await response.json();
-            
+
             if (response.ok) {
                 const progress = data.progress || 0;
                 elements.progressFill.style.width = `${progress}%`;
                 elements.uploadStatus.textContent = `Processing... ${progress}%`;
-                
+
                 if (data.status === 'completed') {
+                    elements.progressFill.style.width = '100%';
                     elements.uploadStatus.textContent = 'Completed successfully!';
                     elements.progressDetails.innerHTML = `
                         <div style="margin-top: 1rem; color: #38a169;">
                             <i class="fas fa-check-circle"></i>
-                            Document processed successfully
+                            Document processed successfully (${data.chunk_count || 'N/A'} chunks)
                         </div>
                     `;
-                    
+
                     // Refresh documents list to show updated status
                     setTimeout(async () => {
                         await loadDocuments();
                         hideUploadProgress();
-                    }, 1000); // Wait 1 second for backend to update
+                    }, 2000); // Wait 2 seconds for backend to finalize
                     return;
                 } else if (data.status === 'failed') {
                     throw new Error(data.error || 'Processing failed');
                 }
-                
+
                 // Continue tracking if still processing
                 if (attempts < maxAttempts) {
                     attempts++;
                     setTimeout(trackProgress, 2000); // Check every 2 seconds
                 } else {
-                    throw new Error('Processing timeout');
+                    // Timeout reached - check database directly
+                    await checkDocumentStatus(documentId);
                 }
             } else {
-                throw new Error('Failed to get progress');
+                // Progress endpoint failed - check database directly
+                await checkDocumentStatus(documentId);
             }
         } catch (error) {
-            elements.uploadStatus.textContent = 'Processing failed';
+            console.error('Progress tracking error:', error);
+            // On error, try checking database status
+            await checkDocumentStatus(documentId);
+        }
+    };
+
+    // Helper function to check database status when progress tracking fails
+    const checkDocumentStatus = async (docId) => {
+        try {
+            const statusResponse = await fetch(`${API_BASE_URL}/documents/${docId}/status`);
+            const statusData = await statusResponse.json();
+
+            if (statusData.status === 'completed') {
+                elements.progressFill.style.width = '100%';
+                elements.uploadStatus.textContent = 'Completed successfully!';
+                elements.progressDetails.innerHTML = `
+                    <div style="margin-top: 1rem; color: #38a169;">
+                        <i class="fas fa-check-circle"></i>
+                        Document processed successfully (${statusData.chunk_count || 'N/A'} chunks)
+                    </div>
+                `;
+                setTimeout(async () => {
+                    await loadDocuments();
+                    hideUploadProgress();
+                }, 2000);
+            } else if (statusData.status === 'processing') {
+                // Still processing - hide progress bar and show in documents list
+                showToast('Still Processing', 'Document is still being processed. Check documents list for updates.', 'info');
+                hideUploadProgress();
+                await loadDocuments();
+            } else {
+                throw new Error(statusData.metadata?.error || 'Processing timeout or failed');
+            }
+        } catch (error) {
+            elements.uploadStatus.textContent = 'Processing status unknown';
             elements.progressDetails.innerHTML = `
                 <div style="margin-top: 1rem; color: #e53e3e;">
                     <i class="fas fa-exclamation-circle"></i>
                     ${error.message}
                 </div>
             `;
-            setTimeout(() => hideUploadProgress(), 5000);
+            setTimeout(() => {
+                hideUploadProgress();
+                loadDocuments(); // Refresh to show actual status
+            }, 3000);
         }
     };
-    
+
     // Start tracking
     setTimeout(trackProgress, 1000);
 }
