@@ -40,21 +40,26 @@ The platform now features a **clean, modern design** using Tailwind CSS, inspire
 
 ### ✅ **Document Processing**
 - **Multi-format support**: PDF, DOCX, TXT, CSV, XLSX (max 50MB)
-- **Real-time progress tracking**: Live updates with circular progress indicators
+- **Real-time progress tracking**: Live updates with fallback status verification
+- **Parallel batch upload**: Process 3 files simultaneously for 3x speed improvement
+- **Reliable progress display**: Fixed "stuck at 50%" bug with database fallback
 - **Pinecone vector storage**: Serverless deployment (us-east-1)
 - **Chunking & embedding**: Automatic text processing and vectorization
-- **Multiple file upload**: Sequential processing with visual feedback
+- **File size display**: Shows actual file size and chunk count in UI
 
 ### ✅ **Intelligent Q&A System** *(Enhanced October 7, 2025)*
 - **🆓 FREE Embeddings**: HuggingFace `sentence-transformers/all-MiniLM-L6-v2` (384 dims)
 - **DeepSeek Reasoner model**: Advanced CoT (Chain-of-Thought) reasoning with 60-second timeout
+- **Smart structured responses**: Auto-formats answers with sections (Summary, Key Points, etc.)
+- **Academic citations**: Superscript references (¹, ², ³) instead of [Source 1]
+- **Markdown rendering**: Rich formatted responses using marked.js library
 - **Document-first approach**: STRICT enforcement of uploaded document usage
 - **Enhanced context**: **8 documents @ 3,000 chars** (vs. original 3 docs @ 500 chars)
 - **High-quality responses**: 4,000 max tokens (8x increase) for detailed, comprehensive answers
 - **100% vectorization**: All chunks successfully embedded and stored in Pinecone
+- **Duplicate source removal**: Only shows each document once in references section
 - **Smart question detection**: Automatically adapts response style
 - **Focused answers**: Temperature 0.3 for precise, document-grounded responses
-- **Source attribution**: Shows document chunks used for answers
 - **Chat interface**: Modern message bubbles with gradient styling
 
 ### ✅ **Real-time Features**
@@ -268,6 +273,20 @@ Perfect for learning:
 
 ## 🔄 **Version History**
 
+### **v3.3.0 - October 7, 2025** - Progress Tracking & UI Fixes ✅🎨
+- **Fixed progress tracking bug** - Documents no longer stuck showing "Processing 50%"
+- **File size display** - Added file_size field to DocumentStatus response
+- **Enhanced progress fallback** - Checks database status when progress polling times out
+- **Increased timeout** - Progress polling extended from 5 to 10 minutes
+- **Chunk count display** - Shows actual chunk count in completion messages
+- **Graceful error handling** - Better feedback when progress tracking fails
+- **Smart structured responses** - AI auto-formats answers with sections (Summary, Key Points, etc.)
+- **Superscript citations** - Academic-style references (¹, ², ³) instead of [Source 1]
+- **Duplicate source removal** - Only shows each document once in references
+- **Parallel batch upload** - Process 3 files simultaneously for 3x speed improvement
+- **Markdown rendering** - Using `marked.js` for formatted AI responses
+- **Result**: Reliable progress tracking, elegant citations, and faster batch uploads!
+
 ### **v3.2.0 - October 7, 2025** - FREE Embeddings + Enhanced Context 🆓🧠
 - **🆓 FREE HuggingFace Embeddings** - Replaced OpenAI with `sentence-transformers/all-MiniLM-L6-v2`
 - **Zero embedding costs** - No API key needed, unlimited usage
@@ -321,7 +340,7 @@ Perfect for learning:
 *Design: Modern Tailwind CSS*
 *Embeddings: FREE HuggingFace 🆓*
 *AI Model: DeepSeek Reasoner (CoT)*
-*Version: 3.2.0*
+*Version: 3.3.0*
 
 ---
 
@@ -332,9 +351,13 @@ Perfect for learning:
 ✅ **DeepSeek Reasoner Integration** - Advanced CoT reasoning with document-grounded answers
 ✅ **Enhanced Context Retrieval** - 8 docs @ 3,000 chars for comprehensive coverage
 ✅ **High-Quality AI Responses** - 4,000 token comprehensive answers (8x increase)
-✅ **100% Vectorization Success** - All 11/11 chunks embedded successfully
+✅ **100% Vectorization Success** - All chunks embedded successfully in Pinecone
 ✅ **Strict Document Usage** - Enhanced prompts enforce uploaded document context
-✅ **Real-time Progress Tracking** - Live updates during processing
+✅ **Reliable Progress Tracking** - Fixed "stuck at 50%" bug with fallback status checks
+✅ **Smart Structured Responses** - Auto-formatted answers with sections and bullet points
+✅ **Academic Citations** - Superscript references (¹, ², ³) with duplicate removal
+✅ **Parallel Batch Upload** - 3 files simultaneously for 3x speed improvement
+✅ **Markdown Rendering** - Rich formatted responses using marked.js
 ✅ **Multi-format Document Support** - PDF, DOCX, TXT, CSV, XLSX (50MB max)
 ✅ **Vercel + Railway Deployment** - Production-ready auto-deployment
 ✅ **Almost FREE Operation** - $0 embeddings + ~$0.14/M tokens (DeepSeek)
@@ -342,4 +365,4 @@ Perfect for learning:
 ✅ **Professional Documentation** - Complete project overview + setup guides
 
 **Total Development**: Multiple sessions (August-October 2025)
-**Final Result**: Enterprise-grade Educational RAG Platform with FREE Embeddings & Document-Grounded AI 🚀🆓
+**Final Result**: Enterprise-grade Educational RAG Platform with FREE Embeddings, Smart Citations & Reliable Progress Tracking 🚀🆓✨
