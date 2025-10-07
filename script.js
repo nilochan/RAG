@@ -668,16 +668,25 @@ function addChatMessage(content, sender, metadata = {}) {
     
     let sourcesHTML = '';
     if (metadata.sources && metadata.sources.length > 0) {
-        sourcesHTML = `
-            <div class="message-sources">
-                <h5><i class="fas fa-book"></i> Sources (${metadata.sources.length})</h5>
-                ${metadata.sources.map((source, index) => `
-                    <div class="source-item">
-                        <strong>${index + 1}.</strong> ${source.source_file || 'Unknown file'}
-                    </div>
-                `).join('')}
-            </div>
-        `;
+        // Get unique sources (remove duplicates)
+        const uniqueSources = [...new Set(metadata.sources.map(s => s.source_file || 'Unknown file'))];
+
+        // Only show references section if there are sources
+        if (uniqueSources.length > 0) {
+            // Use superscript numbers for references
+            const superscripts = ['¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹', '¹⁰'];
+
+            sourcesHTML = `
+                <div class="message-sources">
+                    <h5><i class="fas fa-book"></i> ${uniqueSources.length === 1 ? 'Reference' : 'References'}</h5>
+                    ${uniqueSources.map((source, index) => `
+                        <div class="source-item">
+                            <strong>${superscripts[index] || (index + 1)}.</strong> ${source}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
     }
     
     let metaInfo = '';
