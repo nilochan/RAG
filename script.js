@@ -193,32 +193,49 @@ async function handleMultipleFileUpload(files) {
         return;
     }
     
-    showToast('Multiple Files', `Processing ${files.length} files sequentially...`, 'info');
-    
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        showToast('File Processing', `Processing file ${i + 1} of ${files.length}: ${file.name}`, 'info');
-        
-        try {
-            await handleFileUpload(file);
-            // Wait a moment between uploads
-            if (i < files.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        } catch (error) {
-            showToast('Upload Error', `Failed to upload ${file.name}: ${error.message}`, 'error');
+    showToast('Batch Upload', `Processing ${files.length} files in parallel (3 at a time)...`, 'info');
+
+    // Process files in batches of 3 for parallel upload
+    const BATCH_SIZE = 3;
+    const batches = [];
+
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+        batches.push(files.slice(i, i + BATCH_SIZE));
+    }
+
+    let completed = 0;
+    let failed = 0;
+
+    for (const batch of batches) {
+        // Process batch in parallel
+        const batchPromises = batch.map(file =>
+            handleFileUpload(file)
+                .then(() => {
+                    completed++;
+                    showToast('File Complete', `✅ ${file.name} (${completed}/${files.length})`, 'success');
+                })
+                .catch(error => {
+                    failed++;
+                    showToast('Upload Failed', `❌ ${file.name}: ${error.message}`, 'error');
+                })
+        );
+
+        // Wait for all files in this batch to complete
+        await Promise.all(batchPromises);
+
+        // Brief pause between batches
+        if (batches.indexOf(batch) < batches.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
     }
-    
-    showToast('All Files Complete', `Successfully processed ${files.length} files!`, 'success');
+
+    showToast('Batch Complete', `✅ ${completed} succeeded, ${failed} failed (Total: ${files.length})`, completed > 0 ? 'success' : 'error');
     await loadDocuments(); // Refresh the documents list
 }
 
 async function handleFileUpload(file) {
-    if (isUploading) {
-        showToast('Upload Error', 'Another file is currently being uploaded', 'warning');
-        return;
-    }
+    // Allow parallel uploads - remove global lock
+    // Individual files can upload simultaneously
     
     // Validate file
     const maxSize = 50 * 1024 * 1024; // 50MB
@@ -708,8 +725,13 @@ function addChatMessage(content, sender, metadata = {}) {
         `;
     }
     
+    // Render markdown for AI messages, plain text for user messages
+    const renderedContent = sender === 'ai' && typeof marked !== 'undefined'
+        ? marked.parse(content)
+        : content;
+
     messageDiv.innerHTML = `
-        <div class="message-content">${content}</div>
+        <div class="message-content prose prose-sm max-w-none">${renderedContent}</div>
         ${sourcesHTML}
         ${metaInfo}
     `;
