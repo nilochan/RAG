@@ -45,11 +45,13 @@ The platform now features a **clean, modern design** using Tailwind CSS, inspire
 - **Chunking & embedding**: Automatic text processing and vectorization
 - **Multiple file upload**: Sequential processing with visual feedback
 
-### ✅ **Intelligent Q&A System** *(Enhanced October 6, 2025)*
+### ✅ **Intelligent Q&A System** *(Enhanced October 7, 2025)*
+- **🆓 FREE Embeddings**: HuggingFace `sentence-transformers/all-MiniLM-L6-v2` (384 dims)
 - **DeepSeek Reasoner model**: Advanced CoT (Chain-of-Thought) reasoning with 60-second timeout
 - **Document-first approach**: STRICT enforcement of uploaded document usage
-- **Enhanced context**: 5 documents with 2,000 character chunks (vs. previous 3 docs @ 500 chars)
+- **Enhanced context**: **8 documents @ 3,000 chars** (vs. original 3 docs @ 500 chars)
 - **High-quality responses**: 4,000 max tokens (8x increase) for detailed, comprehensive answers
+- **100% vectorization**: All chunks successfully embedded and stored in Pinecone
 - **Smart question detection**: Automatically adapts response style
 - **Focused answers**: Temperature 0.3 for precise, document-grounded responses
 - **Source attribution**: Shows document chunks used for answers
@@ -73,14 +75,17 @@ The platform now features a **clean, modern design** using Tailwind CSS, inspire
 - **Animations**: Tailwind transitions + custom keyframes
 - **Deployment**: Vercel (instant updates on push)
 
-### **Backend Stack** *(Updated October 6, 2025)*
+### **Backend Stack** *(Updated October 7, 2025)*
 - **Framework**: FastAPI with async/await
 - **Database**: SQLAlchemy + PostgreSQL (Railway)
-- **Vector DB**: Pinecone Serverless (us-east-1)
+- **Vector DB**: Pinecone Serverless (us-east-1) - Index: `educational-docs-hf`
+- **Embeddings**: 🆓 **FREE HuggingFace** `sentence-transformers/all-MiniLM-L6-v2` (384 dims)
 - **AI Provider**: DeepSeek API (**deepseek-reasoner** model with CoT)
 - **Document Processing**: LangChain + custom processors
+- **Context Retrieval**: Top 8 documents @ 3,000 characters each
 - **Response Quality**: 4,000 max tokens, temperature 0.3, 60s timeout
 - **Deployment**: Railway with auto-deploy
+- **Cost**: $0 embeddings + ~$0.14/M tokens (DeepSeek) = **Almost FREE!**
 
 ### **Integration Architecture**
 ```
@@ -263,6 +268,14 @@ Perfect for learning:
 
 ## 🔄 **Version History**
 
+### **v3.2.0 - October 7, 2025** - FREE Embeddings + Enhanced Context 🆓🧠
+- **🆓 FREE HuggingFace Embeddings** - Replaced OpenAI with `sentence-transformers/all-MiniLM-L6-v2`
+- **Zero embedding costs** - No API key needed, unlimited usage
+- **Enhanced context retrieval** - 8 docs @ 3,000 chars (was 5 docs @ 2,000 chars)
+- **11/11 vectors created** - Successfully vectorized all document chunks
+- **Pinecone integration** - New index: `educational-docs-hf` (384 dimensions)
+- **Result**: Document-specific answers with 100% FREE embeddings!
+
 ### **v3.1.0 - October 6, 2025** - Critical AI Enhancements 🧠
 - **Upgraded to DeepSeek Reasoner** (from deepseek-chat)
 - **8x token increase** (500 → 4,000 max tokens)
@@ -303,26 +316,30 @@ Perfect for learning:
 
 ---
 
-*Last Updated: October 6, 2025*
+*Last Updated: October 7, 2025*
 *Status: Production Ready ✅*
 *Design: Modern Tailwind CSS*
+*Embeddings: FREE HuggingFace 🆓*
 *AI Model: DeepSeek Reasoner (CoT)*
-*Version: 3.1.0*
+*Version: 3.2.0*
 
 ---
 
 ## 🏆 **Achievement Summary**
 
+✅ **🆓 100% FREE Embeddings** - HuggingFace sentence-transformers (zero API costs!)
 ✅ **Modern Tailwind CSS Design** - Clean, professional SaaS-style interface
 ✅ **DeepSeek Reasoner Integration** - Advanced CoT reasoning with document-grounded answers
+✅ **Enhanced Context Retrieval** - 8 docs @ 3,000 chars for comprehensive coverage
 ✅ **High-Quality AI Responses** - 4,000 token comprehensive answers (8x increase)
+✅ **100% Vectorization Success** - All 11/11 chunks embedded successfully
 ✅ **Strict Document Usage** - Enhanced prompts enforce uploaded document context
 ✅ **Real-time Progress Tracking** - Live updates during processing
 ✅ **Multi-format Document Support** - PDF, DOCX, TXT, CSV, XLSX (50MB max)
 ✅ **Vercel + Railway Deployment** - Production-ready auto-deployment
-✅ **Lightweight Bundle** - Reduced CSS from 1,200+ lines to Tailwind utilities
+✅ **Almost FREE Operation** - $0 embeddings + ~$0.14/M tokens (DeepSeek)
 ✅ **Card-based Layout** - Colorful gradient headers for each section
-✅ **Professional Documentation** - Complete project overview
+✅ **Professional Documentation** - Complete project overview + setup guides
 
 **Total Development**: Multiple sessions (August-October 2025)
-**Final Result**: Enterprise-grade Educational RAG Platform with Document-Grounded AI 🚀
+**Final Result**: Enterprise-grade Educational RAG Platform with FREE Embeddings & Document-Grounded AI 🚀🆓
