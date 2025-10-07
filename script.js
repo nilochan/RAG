@@ -6,6 +6,12 @@ let documents = [];
 let chatMessages = [];
 let isUploading = false;
 let documentRefreshInterval = null;
+let batchUploadState = {
+    total: 0,
+    completed: 0,
+    current: null,
+    files: []
+};
 
 // DOM Elements
 const elements = {
@@ -15,10 +21,13 @@ const elements = {
     uploadArea: document.getElementById('uploadArea'),
     fileInput: document.getElementById('fileInput'),
     uploadProgress: document.getElementById('uploadProgress'),
+    batchProgress: document.getElementById('batchProgress'),
+    overallStatus: document.getElementById('overallStatus'),
     uploadFileName: document.getElementById('uploadFileName'),
     uploadStatus: document.getElementById('uploadStatus'),
     progressFill: document.getElementById('progressFill'),
     progressDetails: document.getElementById('progressDetails'),
+    stageBreakdown: document.getElementById('stageBreakdown'),
     documentsCard: document.getElementById('documentsCard'),
     documentsList: document.getElementById('documentsList'),
     chatContainer: document.getElementById('chatContainer'),
@@ -193,7 +202,16 @@ async function handleMultipleFileUpload(files) {
         showToast('Upload Error', 'Another file is currently being uploaded', 'warning');
         return;
     }
-    
+
+    // Initialize batch state
+    batchUploadState = {
+        total: files.length,
+        completed: 0,
+        current: null,
+        files: files.map(f => ({ name: f.name, status: 'pending', progress: 0 }))
+    };
+
+    updateBatchProgress();
     showToast('Batch Upload', `Processing ${files.length} files in parallel (3 at a time)...`, 'info');
 
     // Process files in batches of 3 for parallel upload
@@ -213,10 +231,14 @@ async function handleMultipleFileUpload(files) {
             handleFileUpload(file)
                 .then(() => {
                     completed++;
+                    batchUploadState.completed = completed;
+                    updateBatchProgress();
                     showToast('File Complete', `✅ ${file.name} (${completed}/${files.length})`, 'success');
                 })
                 .catch(error => {
                     failed++;
+                    batchUploadState.completed = completed + failed;
+                    updateBatchProgress();
                     showToast('Upload Failed', `❌ ${file.name}: ${error.message}`, 'error');
                 })
         );
@@ -231,6 +253,10 @@ async function handleMultipleFileUpload(files) {
     }
 
     showToast('Batch Complete', `✅ ${completed} succeeded, ${failed} failed (Total: ${files.length})`, completed > 0 ? 'success' : 'error');
+
+    // Reset batch state
+    batchUploadState = { total: 0, completed: 0, current: null, files: [] };
+
     await loadDocuments(); // Refresh the documents list
 }
 
@@ -303,6 +329,67 @@ function hideUploadProgress() {
     elements.uploadProgress.classList.add('hidden');
 }
 
+// Update batch progress display
+function updateBatchProgress() {
+    if (batchUploadState.total === 0) return;
+
+    const completed = batchUploadState.completed;
+    const total = batchUploadState.total;
+    const percent = Math.round((completed / total) * 100);
+
+    if (elements.batchProgress) {
+        elements.batchProgress.textContent = `Batch Progress: ${completed}/${total} files`;
+    }
+    if (elements.overallStatus) {
+        elements.overallStatus.textContent = `${percent}% overall`;
+    }
+}
+
+// Get stage details from progress percentage
+function getStageDetails(progress) {
+    if (progress <= 5) return { stage: 'Uploading', icon: '📤', color: 'blue' };
+    if (progress <= 25) return { stage: 'Extracting text', icon: '📄', color: 'purple' };
+    if (progress <= 40) return { stage: 'Chunking document', icon: '✂️', color: 'indigo' };
+    if (progress <= 60) return { stage: 'Creating embeddings', icon: '🧠', color: 'pink' };
+    if (progress <= 95) return { stage: 'Storing in Pinecone', icon: '💾', color: 'green' };
+    return { stage: 'Finalizing', icon: '✅', color: 'emerald' };
+}
+
+// Render stage breakdown
+function renderStageBreakdown(progress) {
+    const stages = [
+        { name: 'Upload', range: [0, 5], icon: '📤' },
+        { name: 'Extract', range: [6, 25], icon: '📄' },
+        { name: 'Chunk', range: [26, 40], icon: '✂️' },
+        { name: 'Embed', range: [41, 90], icon: '🧠' },
+        { name: 'Store', range: [91, 100], icon: '💾' }
+    ];
+
+    const html = stages.map(stage => {
+        const isActive = progress >= stage.range[0] && progress <= stage.range[1];
+        const isCompleted = progress > stage.range[1];
+
+        return `
+            <div class="flex flex-col items-center p-2 rounded-lg ${
+                isActive ? 'bg-blue-100 border-2 border-blue-500' :
+                isCompleted ? 'bg-green-100' : 'bg-gray-100'
+            }">
+                <div class="text-xl mb-1">${stage.icon}</div>
+                <div class="text-xs font-medium ${
+                    isActive ? 'text-blue-700' :
+                    isCompleted ? 'text-green-700' : 'text-gray-500'
+                }">${stage.name}</div>
+                ${isActive ? '<div class="text-xs text-blue-600 mt-0.5">Active</div>' : ''}
+                ${isCompleted ? '<div class="text-xs text-green-600 mt-0.5">✓</div>' : ''}
+            </div>
+        `;
+    }).join('');
+
+    if (elements.stageBreakdown) {
+        elements.stageBreakdown.innerHTML = html;
+    }
+}
+
 // Start auto-refreshing documents list during upload
 function startDocumentAutoRefresh() {
     if (documentRefreshInterval) return; // Already running
@@ -336,6 +423,25 @@ async function trackUploadProgress(documentId) {
                 const progress = data.progress || 0;
                 elements.progressFill.style.width = `${progress}%`;
                 elements.uploadStatus.textContent = `Processing... ${progress}%`;
+
+                // Update stage details
+                const stageInfo = getStageDetails(progress);
+                elements.progressDetails.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="text-lg">${stageInfo.icon}</span>
+                        <span class="font-medium text-${stageInfo.color}-700">${stageInfo.stage}</span>
+                        <span class="text-gray-500">•</span>
+                        <span class="text-gray-600">${progress}%</span>
+                    </div>
+                `;
+
+                // Update stage breakdown
+                renderStageBreakdown(progress);
+
+                // Update batch progress if in batch mode
+                if (batchUploadState.total > 0) {
+                    updateBatchProgress();
+                }
 
                 if (data.status === 'completed') {
                     elements.progressFill.style.width = '100%';
