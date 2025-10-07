@@ -5,6 +5,7 @@ const API_BASE_URL = 'https://rag-chanchinthai.up.railway.app';
 let documents = [];
 let chatMessages = [];
 let isUploading = false;
+let documentRefreshInterval = null;
 
 // DOM Elements
 const elements = {
@@ -102,33 +103,33 @@ function updateSystemStatus(data, status) {
 
     if (data && status === 'online') {
         const statusHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 ${Object.entries(data.components).map(([component, componentStatus]) => `
-                    <div class="flex items-center space-x-4 p-4 bg-${componentStatus === 'operational' ? 'green' : 'yellow'}-50 border border-${componentStatus === 'operational' ? 'green' : 'yellow'}-200 rounded-lg">
-                        <div class="bg-${componentStatus === 'operational' ? 'green' : 'yellow'}-600 p-3 rounded-lg">
-                            <i class="fas ${getComponentIcon(component)} text-white text-xl"></i>
+                    <div class="flex items-center space-x-2 p-2.5 bg-${componentStatus === 'operational' ? 'green' : 'yellow'}-50 border border-${componentStatus === 'operational' ? 'green' : 'yellow'}-200 rounded-lg">
+                        <div class="bg-${componentStatus === 'operational' ? 'green' : 'yellow'}-600 p-1.5 rounded-md">
+                            <i class="fas ${getComponentIcon(component)} text-white text-xs"></i>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-900">${formatComponentName(component)}</h4>
-                            <p class="text-sm text-gray-600">${componentStatus}</p>
+                            <h4 class="text-sm font-semibold text-gray-900">${formatComponentName(component)}</h4>
+                            <p class="text-xs text-gray-600">${componentStatus}</p>
                         </div>
                     </div>
                 `).join('')}
             </div>
-            <div class="mt-4 text-center text-sm text-gray-500">
+            <div class="mt-3 text-center text-xs text-gray-500">
                 Last updated: ${new Date(data.timestamp).toLocaleString()}
             </div>
         `;
         elements.systemStatus.innerHTML = statusHTML;
     } else {
         elements.systemStatus.innerHTML = `
-            <div class="flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div class="bg-red-600 p-3 rounded-lg">
-                    <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+            <div class="flex items-center space-x-2 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+                <div class="bg-red-600 p-1.5 rounded-md">
+                    <i class="fas fa-exclamation-triangle text-white text-xs"></i>
                 </div>
                 <div>
-                    <h4 class="font-bold text-gray-900">Connection Failed</h4>
-                    <p class="text-sm text-gray-600">Unable to reach backend server</p>
+                    <h4 class="text-sm font-semibold text-gray-900">Connection Failed</h4>
+                    <p class="text-xs text-gray-600">Unable to reach backend server</p>
                 </div>
             </div>
         `;
@@ -302,9 +303,29 @@ function hideUploadProgress() {
     elements.uploadProgress.classList.add('hidden');
 }
 
+// Start auto-refreshing documents list during upload
+function startDocumentAutoRefresh() {
+    if (documentRefreshInterval) return; // Already running
+
+    documentRefreshInterval = setInterval(async () => {
+        await loadDocuments();
+    }, 3000); // Refresh every 3 seconds during upload
+}
+
+// Stop auto-refreshing documents list
+function stopDocumentAutoRefresh() {
+    if (documentRefreshInterval) {
+        clearInterval(documentRefreshInterval);
+        documentRefreshInterval = null;
+    }
+}
+
 async function trackUploadProgress(documentId) {
     const maxAttempts = 120; // 10 minutes max (increased from 5)
     let attempts = 0;
+
+    // Start auto-refreshing document list to show real-time progress
+    startDocumentAutoRefresh();
 
     const trackProgress = async () => {
         try {
@@ -326,7 +347,8 @@ async function trackUploadProgress(documentId) {
                         </div>
                     `;
 
-                    // Refresh documents list to show updated status
+                    // Stop auto-refresh and do final refresh
+                    stopDocumentAutoRefresh();
                     setTimeout(async () => {
                         await loadDocuments();
                         hideUploadProgress();
@@ -362,6 +384,7 @@ async function trackUploadProgress(documentId) {
             const statusData = await statusResponse.json();
 
             if (statusData.status === 'completed') {
+                stopDocumentAutoRefresh();
                 elements.progressFill.style.width = '100%';
                 elements.uploadStatus.textContent = 'Completed successfully!';
                 elements.progressDetails.innerHTML = `
@@ -376,13 +399,16 @@ async function trackUploadProgress(documentId) {
                 }, 2000);
             } else if (statusData.status === 'processing') {
                 // Still processing - hide progress bar and show in documents list
+                stopDocumentAutoRefresh();
                 showToast('Still Processing', 'Document is still being processed. Check documents list for updates.', 'info');
                 hideUploadProgress();
                 await loadDocuments();
             } else {
+                stopDocumentAutoRefresh();
                 throw new Error(statusData.metadata?.error || 'Processing timeout or failed');
             }
         } catch (error) {
+            stopDocumentAutoRefresh();
             elements.uploadStatus.textContent = 'Processing status unknown';
             elements.progressDetails.innerHTML = `
                 <div style="margin-top: 1rem; color: #e53e3e;">
