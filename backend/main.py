@@ -54,8 +54,8 @@ def update_document_progress(doc_id: int, progress: int):
 @app.on_startup
 async def startup_event():
     """Initialize the system"""
-    logger.info("=€ Educational RAG Platform starting up...")
-    logger.info(f"=Ê Progress tracking enabled for real-time monitoring")
+    logger.info("=ï¿½ Educational RAG Platform starting up...")
+    logger.info(f"=ï¿½ Progress tracking enabled for real-time monitoring")
 
 @app.get("/")
 async def root():
@@ -186,9 +186,9 @@ def estimate_processing_time(file_size: int, file_type: str) -> str:
         return f"~{int(estimated_seconds // 60)} minutes"
 
 async def process_document_background(
-    file_content: bytes, 
-    filename: str, 
-    file_type: str, 
+    file_content: bytes,
+    filename: str,
+    file_type: str,
     doc_id: int,
     db: Session
 ):
@@ -198,15 +198,15 @@ async def process_document_background(
         doc_record = db.query(DocumentModel).filter(DocumentModel.id == doc_id).first()
         doc_record.processing_status = "processing"
         db.commit()
-        
+
         # Update progress store
         update_document_progress(doc_id, 1)
-        
+
         # Process the document
         result = await document_processor.process_document(
             file_content, filename, file_type, doc_id
         )
-        
+
         if result["success"]:
             # Update database with results
             doc_record.processing_status = "completed"
@@ -217,27 +217,34 @@ async def process_document_background(
                 "processed_at": datetime.utcnow().isoformat(),
                 "processing_time": result.get("processing_time", 0)
             })
-            
-            # Final progress update
-            update_document_progress(doc_id, 100)
-            
+
+            # Final progress update - keep in store for frontend to read
+            progress_store[doc_id] = {
+                "progress": 100,
+                "timestamp": datetime.utcnow().isoformat(),
+                "status": "completed",
+                "filename": filename,
+                "chunk_count": result["chunk_count"]
+            }
+
         else:
             doc_record.processing_status = "failed"
             doc_record.metadata = json.dumps({
                 "error": result["error"],
                 "failed_at": datetime.utcnow().isoformat()
             })
-            
+
             progress_store[doc_id] = {
                 "progress": 0,
                 "timestamp": datetime.utcnow().isoformat(),
                 "status": "failed",
-                "error": result["error"]
+                "error": result["error"],
+                "filename": filename
             }
-        
+
         db.commit()
         logger.info(f"Document processing completed for {filename} (ID: {doc_id})")
-        
+
     except Exception as e:
         logger.error(f"Background processing error: {e}")
         doc_record.processing_status = "failed"
@@ -246,12 +253,13 @@ async def process_document_background(
             "failed_at": datetime.utcnow().isoformat()
         })
         db.commit()
-        
+
         progress_store[doc_id] = {
             "progress": 0,
             "timestamp": datetime.utcnow().isoformat(),
             "status": "failed",
-            "error": str(e)
+            "error": str(e),
+            "filename": filename
         }
 
 @app.get("/documents/{doc_id}/progress")
@@ -303,23 +311,27 @@ async def stream_document_progress(doc_id: int):
 async def get_documents(db: Session = Depends(get_db)):
     """Get all uploaded documents with their status"""
     documents = db.query(DocumentModel).order_by(DocumentModel.upload_time.desc()).all()
-    
+
     result = []
     for doc in documents:
         # Get real-time progress if available
         progress = None
         if doc.id in progress_store:
             progress = progress_store[doc.id]["progress"]
-        
+        elif doc.processing_status == "completed":
+            # If completed but not in progress_store, set to 100%
+            progress = 100
+
         result.append(DocumentStatus(
             id=doc.id,
             filename=doc.original_name,
             status=doc.processing_status,
             progress=progress,
             chunk_count=doc.chunk_count,
+            file_size=doc.file_size,
             upload_time=doc.upload_time
         ))
-    
+
     return result
 
 @app.get("/documents/{doc_id}/status")

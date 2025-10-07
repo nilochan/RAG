@@ -44,6 +44,7 @@ class DocumentStatus(BaseModel):
     status: str
     progress: Optional[int] = None
     chunk_count: Optional[int] = None
+    file_size: Optional[int] = None
     upload_time: datetime
 
 class QueryRequest(BaseModel):
