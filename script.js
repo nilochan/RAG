@@ -467,60 +467,26 @@ function renderDocuments() {
     const totalSize = documents.reduce((sum, doc) => sum + (doc.file_size || 0), 0);
 
     const statsHTML = `
-        <div class="quick-stats">
-            <div class="stat-card blue">
-                <div class="stat-icon">
-                    <i class="fas fa-file-alt"></i>
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+            <div class="flex items-center space-x-6 text-sm">
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-gray-600">Total:</span>
+                    <span class="font-semibold text-gray-900">${totalDocs}</span>
                 </div>
-                <div class="stat-content">
-                    <div class="stat-label">Total</div>
-                    <div class="stat-value">${totalDocs}</div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-gray-600">Completed:</span>
+                    <span class="font-semibold text-green-600">${completedDocs}</span>
                 </div>
-            </div>
-            <div class="stat-card green">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-gray-600">Processing:</span>
+                    <span class="font-semibold text-blue-600">${processingDocs}</span>
                 </div>
-                <div class="stat-content">
-                    <div class="stat-label">Completed</div>
-                    <div class="stat-value">${completedDocs}</div>
-                </div>
-            </div>
-            <div class="stat-card orange">
-                <div class="stat-icon">
-                    <i class="fas fa-spinner"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">Processing</div>
-                    <div class="stat-value">${processingDocs}</div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-gray-600">Size:</span>
+                    <span class="font-semibold text-gray-900">${formatFileSize(totalSize)}</span>
                 </div>
             </div>
-            <div class="stat-card purple">
-                <div class="stat-icon">
-                    <i class="fas fa-database"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">Total Size</div>
-                    <div class="stat-value">${formatFileSize(totalSize)}</div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Filters bar
-    const filtersHTML = `
-        <div class="filters-bar">
-            <div class="filter-group">
-                <label class="filter-label">Status:</label>
-                <select class="filter-select" id="statusFilter">
-                    <option value="all">All Statuses</option>
-                    <option value="completed">Completed</option>
-                    <option value="processing">Processing</option>
-                    <option value="failed">Failed</option>
-                    <option value="pending">Pending</option>
-                </select>
-            </div>
-            <input type="text" class="search-input" id="documentSearch" placeholder="Search documents...">
+            <input type="text" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent" id="documentSearch" placeholder="Search documents...">
         </div>
     `;
 
@@ -530,51 +496,49 @@ function renderDocuments() {
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gradient-to-r from-green-50 to-emerald-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Document</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Size</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Chunks</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Upload Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-700">Document</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-700">Size</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-700">Chunks</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-700">Upload Date</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-700">Status</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     ${documents.map(doc => `
                         <tr class="hover:bg-green-50 transition-colors" data-status="${doc.status}" data-filename="${doc.filename.toLowerCase()}">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center space-x-3">
-                                    <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center">
-                                        <i class="fas ${getFileIcon(doc.filename)} text-green-600 text-lg"></i>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas ${getFileIcon(doc.filename)} text-green-600 text-sm"></i>
                                     </div>
-                                    <div>
-                                        <div class="font-semibold text-gray-900">${doc.filename}</div>
-                                        <div class="text-sm text-gray-500">${doc.chunk_count || 0} chunks</div>
+                                    <div class="font-medium text-sm text-gray-900">${doc.filename}</div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-gray-900">${formatFileSize(doc.file_size || 0)}</span>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="text-sm text-gray-700">${formatFileSize(doc.file_size || 0)}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm text-gray-900">${doc.chunk_count || 0}</span>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="text-sm text-gray-700">${doc.chunk_count || 0}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-4 py-3 whitespace-nowrap">
                                 <span class="text-sm text-gray-500">${formatDate(doc.upload_time)}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-4 py-3 whitespace-nowrap">
                                 ${doc.status === 'completed' ?
-                                    `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                        <i class="fas fa-check-circle mr-1"></i> Completed
+                                    `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                        <i class="fas fa-check-circle mr-1 text-[10px]"></i> Completed
                                     </span>` :
                                 doc.status === 'processing' ?
-                                    `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                                        <i class="fas fa-spinner fa-spin mr-1"></i> Processing ${doc.progress || 0}%
+                                    `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                        <i class="fas fa-spinner fa-spin mr-1 text-[10px]"></i> ${doc.progress || 0}%
                                     </span>` :
                                 doc.status === 'failed' ?
-                                    `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                        <i class="fas fa-exclamation-circle mr-1"></i> Failed
+                                    `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                        <i class="fas fa-exclamation-circle mr-1 text-[10px]"></i> Failed
                                     </span>` :
-                                    `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                                        <i class="fas fa-clock mr-1"></i> Pending
+                                    `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                                        <i class="fas fa-clock mr-1 text-[10px]"></i> Pending
                                     </span>`
                                 }
                             </td>
@@ -585,10 +549,20 @@ function renderDocuments() {
         </div>
     `;
 
-    elements.documentsList.innerHTML = statsHTML + filtersHTML + tableHTML;
+    elements.documentsList.innerHTML = statsHTML + tableHTML;
 
-    // Add filter functionality
-    setupDocumentFilters();
+    // Add search functionality
+    const searchInput = document.getElementById('documentSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const filename = row.dataset.filename;
+                row.style.display = filename.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    }
 }
 
 function getFileIcon(filename) {
