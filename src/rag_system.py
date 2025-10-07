@@ -378,12 +378,12 @@ class EnhancedRAGSystem:
             context = ""
             if documents and len(documents) > 0:
                 context_parts = []
-                # Use top 5 documents instead of 3 for better coverage
-                for i, doc in enumerate(documents[:5]):
+                # Use top 8 documents for comprehensive coverage
+                for i, doc in enumerate(documents[:8]):
                     if hasattr(doc, 'page_content'):
                         source = getattr(doc, 'metadata', {}).get('source', f'Document {i+1}')
-                        # Increase chunk size to 2000 characters for better context
-                        content = doc.page_content[:2000] + "..." if len(doc.page_content) > 2000 else doc.page_content
+                        # Increase chunk size to 3000 characters for better context
+                        content = doc.page_content[:3000] + "..." if len(doc.page_content) > 3000 else doc.page_content
                         context_parts.append(f"[Source {i+1}: {source}]\\n{content}")
                 context = "\\n\\n---\\n\\n".join(context_parts)
                 logger.info(f"Built context from {len(context_parts)} document chunks, total length: {len(context)}")

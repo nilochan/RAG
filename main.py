@@ -436,7 +436,7 @@ async def query_documents(request: QueryRequest, db: Session = Depends(get_db)):
             doc_ids = [doc.id for doc in completed_docs]
             logger.info(f"🔍 Searching for documents with IDs: {doc_ids}")
             relevant_docs = document_processor.search_documents(
-                request.question, doc_ids=doc_ids, k=5
+                request.question, doc_ids=doc_ids, k=8
             )
             logger.info(f"📄 Found {len(relevant_docs)} relevant document chunks")
             if not relevant_docs:
