@@ -273,6 +273,16 @@ Perfect for learning:
 
 ## 🔄 **Version History**
 
+### **v3.5.0 - October 7, 2025** - Enhanced Upload Progress Visibility 📊🎯
+- **Batch progress tracking** - Shows "X/Y files" and overall completion percentage
+- **5-stage visual breakdown** - Upload 📤, Extract 📄, Chunk ✂️, Embed 🧠, Store 💾
+- **Active stage highlighting** - Blue border around current processing stage
+- **Completed stage indicators** - Green background with ✓ checkmark
+- **Real-time stage details** - Shows current activity with emoji and percentage
+- **Color-coded progress** - Each stage has distinct visual identity
+- **Improved batch uploads** - Clear visibility when processing multiple files in parallel
+- **Result**: Complete transparency into document processing pipeline!
+
 ### **v3.4.0 - October 7, 2025** - Major UI Compact & Progress Sync Fix 🎨✅
 - **Progress sync fix** - Upload bar and document list now show identical percentages in real-time
 - **Auto-refresh mechanism** - Documents list refreshes every 3 seconds during uploads
@@ -351,7 +361,7 @@ Perfect for learning:
 *Design: Modern Compact Tailwind CSS*
 *Embeddings: FREE HuggingFace 🆓*
 *AI Model: DeepSeek Reasoner (CoT)*
-*Version: 3.4.0*
+*Version: 3.5.0*
 
 ---
 
@@ -359,7 +369,9 @@ Perfect for learning:
 
 ✅ **🆓 100% FREE Embeddings** - HuggingFace sentence-transformers (zero API costs!)
 ✅ **Modern Compact Design** - Clean, professional SaaS-style interface with space optimization
+✅ **5-Stage Progress Pipeline** - Visual breakdown: Upload → Extract → Chunk → Embed → Store
 ✅ **Perfect Progress Sync** - Real-time auto-refresh ensures upload bar & document list match
+✅ **Batch Upload Visibility** - Shows "X/Y files" with active stage highlighting & completion markers
 ✅ **DeepSeek Reasoner Integration** - Advanced CoT reasoning with document-grounded answers
 ✅ **Enhanced Context Retrieval** - 8 docs @ 3,000 chars for comprehensive coverage
 ✅ **High-Quality AI Responses** - 4,000 token comprehensive answers (8x increase)
@@ -378,4 +390,4 @@ Perfect for learning:
 ✅ **Professional Documentation** - Complete project overview + setup guides
 
 **Total Development**: Multiple sessions (August-October 2025)
-**Final Result**: Enterprise-grade Educational RAG Platform with FREE Embeddings, Smart Citations, Perfect Progress Sync & Compact UI 🚀🆓✨
+**Final Result**: Enterprise-grade Educational RAG Platform with FREE Embeddings, Smart Citations, 5-Stage Visual Progress & Batch Upload Transparency 🚀🆓✨
